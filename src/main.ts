@@ -1,4 +1,4 @@
-import { Devvit, OnTriggerEvent } from '@devvit/public-api';
+import { Devvit, OnTriggerEvent, Subreddit } from '@devvit/public-api';
 import { ModAction } from '@devvit/protos';
 
 Devvit.configure({
@@ -19,14 +19,16 @@ const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 const STYLESHEET_MAX_LENGTH = 100000;
 
-async function generateStyles(context: Devvit.Context): Promise<string> {
+async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Promise<string> {
+	const contextSettings = await context.settings.getAll();
+	const subredditSettings = subreddit.settings;
+
 	let generatedStyles = '';
 
-	if (await context.settings.get('add-comment-collapse-bar')) {
+	if (contextSettings['add-comment-collapse-bar']) {
 		// TODO use colors from new reddit styles
 		// new reddit uses '--newCommunityTheme-line' and '--newCommunityTheme-button'
 		generatedStyles += `
-
 .comment .expand {
 	color: #888;
 	transition: 0.2s;
@@ -39,6 +41,47 @@ async function generateStyles(context: Devvit.Context): Promise<string> {
 	background-color: #F5F5F5;
 	color: #666;
 	text-decoration: none;
+}`;
+	}
+
+	if (subredditSettings.bannerBackgroundColor) {
+		generatedStyles += `
+#header {
+	background-color: ` + subredditSettings.bannerBackgroundColor + `;
+}`;
+	}
+
+	if (subredditSettings.bannerHeight) {
+		generatedStyles += `
+#header {
+	height: ` + subredditSettings.bannerHeight + `;
+}`;
+	}
+
+	if (subredditSettings.bannerBackgroundImage) {
+		generatedStyles += `
+#header {
+	background-image: url(` + subredditSettings.bannerBackgroundImage + `);`;
+	if (subredditSettings.bannerPosition == 'fill') {
+		generatedStyles += `
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+`;
+	} else if (subredditSettings.bannerPosition == 'tile') {
+		generatedStyles += `
+	background-position: center top;
+	background-repeat: repeat;
+	background-size: auto;
+`;
+	}
+		generatedStyles += '}';
+	}
+
+	if (subredditSettings.bannerImage) {
+		generatedStyles += `
+#header {
+	: url(` + subredditSettings.bannerImage + `);
 }`;
 	}
 
@@ -67,8 +110,7 @@ function createStylesheet(generatedStyles: string, extraStyles: string): string 
 		return merge(generatedStyles, extraStyles, spacer);
 	}
 
-	// Try removing extra line breaks.
-	generatedStyles = generatedStyles.replace(/\n\n/g, '\n');
+	// Try using a smaller spacer.
 	spacer = '\n';
 	if (computeTotalLength(generatedStyles, extraStyles, spacer) < STYLESHEET_MAX_LENGTH) {
 		return merge(generatedStyles, extraStyles, spacer);
@@ -98,7 +140,7 @@ Devvit.addTrigger({
 		const subreddit = await reddit.getSubredditById(context.subredditId);
 		//const subreddit = event.subreddit; // possibly undefined?
 
-		const generatedStyles = await generateStyles(context);
+		const generatedStyles = await generateStyles(context, subreddit);
 
 		const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
 		const extraStyles = (() => {
