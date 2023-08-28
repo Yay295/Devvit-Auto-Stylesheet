@@ -132,7 +132,7 @@ Devvit.addTrigger({
 	event: 'ModAction',
 	onEvent: async (event: OnTriggerEvent<ModAction>, context: Devvit.Context) => {
 		// https://developers.reddit.com/docs/mod_actions/
-		if (event.action !== 'COMMUNITY_STYLING') {
+		if (event.action !== 'community_styling') {
 			return;
 		}
 
