@@ -28,19 +28,34 @@ async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Pr
 	if (contextSettings['add-comment-collapse-bar']) {
 		// TODO use colors from new reddit styles
 		// new reddit uses '--newCommunityTheme-line' and '--newCommunityTheme-button'
+		const newCommunityThemeLine = '#EDEFF1';
+		const newCommunityThemeButton = '#5687E3';
 		generatedStyles += `
 .comment .expand {
-	color: #888;
-	transition: 0.2s;
 	position: absolute;
 	top: 0;
 	left: 0;
 	bottom: 0;
+	width: 18px;
+	text-align: center;
 }
-.comment .expand:hover {
-	background-color: #F5F5F5;
-	color: #666;
+.comment .expand::after {
+	content: "";
+	position: absolute;
+	top: 17px;
+	left: 9px;
+	bottom: 0;
+	border: ` + newCommunityThemeLine + ` solid 1px;
+}
+.comment.collapsed .expand::after {
+	display: none;
+}
+.comment .expand:hover::after {
+	border-color: ` + newCommunityThemeButton + `;
 	text-decoration: none;
+}
+.comment .child {
+	border: none;
 }`;
 	}
 
