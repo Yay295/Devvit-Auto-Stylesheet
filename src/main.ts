@@ -5,6 +5,10 @@ Devvit.configure({
 	redditAPI: true
 });
 
+// Will need "edit config" permissions.
+// Permissions are not yet configurable.
+// https://developers.reddit.com/docs/app_accounts#permissions
+
 // https://developers.reddit.com/docs/install_settings/
 Devvit.addSettings([
 	{
