@@ -112,33 +112,38 @@ async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Pr
  * The generated styles will be minified if necessary, but the extra styles will only be trimmed.
  * If the CSS cannot be minified to fit under the limit, this function will return null.
  */
-function createStylesheet(generatedStyles: string, extraStyles: string): string | null {
-	function computeTotalLength(generatedStyles: string, extraStyles: string, spacer: string): number {
-		return STYLESHEET_HEADER.length + spacer.length + generatedStyles.length + spacer.length + STYLESHEET_FOOTER.length + (extraStyles ? spacer.length + extraStyles.length : 0);
+function createStylesheet(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string): string | null {
+	function computeTotalLength(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string, spacer: string): number {
+		return (extraStylesBefore ? extraStylesBefore.length + spacer.length : 0)
+			+ STYLESHEET_HEADER.length + spacer.length + generatedStyles.length + spacer.length + STYLESHEET_FOOTER.length
+			+ (extraStylesAfter ? spacer.length + extraStylesAfter.length : 0);
 	}
-	function merge(generatedStyles: string, extraStyles: string, spacer: string): string {
-		return STYLESHEET_HEADER + spacer + generatedStyles + spacer + STYLESHEET_FOOTER + (extraStyles ? spacer + extraStyles : '');
+	function merge(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string, spacer: string): string {
+		return (extraStylesBefore ? extraStylesBefore + spacer : '') 
+			+ STYLESHEET_HEADER + spacer + generatedStyles + spacer + STYLESHEET_FOOTER
+			+ (extraStylesAfter ? spacer + extraStylesAfter : '');
 	}
 
-	extraStyles = extraStyles.trim();
+	extraStylesBefore = extraStylesBefore.trim();
+	extraStylesAfter = extraStylesAfter.trim();
 
 	let spacer = '\n\n';
 
 	// No minification.
-	if (computeTotalLength(generatedStyles, extraStyles, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(generatedStyles, extraStyles, spacer);
+	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
+		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 	}
 
 	// Try using a smaller spacer.
 	spacer = '\n';
-	if (computeTotalLength(generatedStyles, extraStyles, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(generatedStyles, extraStyles, spacer);
+	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
+		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 	}
 
 	// Try removing indentation.
 	generatedStyles = generatedStyles.replace(/^\s+/g, '');
-	if (computeTotalLength(generatedStyles, extraStyles, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(generatedStyles, extraStyles, spacer);
+	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
+		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 	}
 
 	// TODO more minification strategies
@@ -162,15 +167,25 @@ Devvit.addTrigger({
 		const generatedStyles = await generateStyles(context, subreddit);
 
 		const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
-		const extraStyles = (() => {
-			const extraStylesStart = currentStylesheet.indexOf(STYLESHEET_FOOTER);
-			if (extraStylesStart > -1) {
-				return currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length);
+		const [extraStylesBefore, extraStylesAfter] = (() => {
+			const generatedStylesStart = currentStylesheet.indexOf(STYLESHEET_HEADER);
+			const extraStylesBefore = generatedStylesStart > 0 ? currentStylesheet.substring(0, generatedStylesStart) : '';
+
+			const generatedStylesEnd = currentStylesheet.indexOf(STYLESHEET_FOOTER, generatedStylesStart);
+
+			if (generatedStylesEnd > -1) {
+				// possible header, definite footer
+				return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
+			} else if (generatedStylesStart > -1) {
+				// definite header, no footer
+				return [extraStylesBefore, ''];
+			} else {
+				// no header, no footer
+				return ['', currentStylesheet];
 			}
-			return currentStylesheet;
 		})();
 
-		const newStylesheet = createStylesheet(generatedStyles, extraStyles);
+		const newStylesheet = createStylesheet(extraStylesBefore, generatedStyles, extraStylesAfter);
 		if (newStylesheet === null) {
 			await reddit.modMail.createConversation({
 				to: null, // creates internal moderator discussion
