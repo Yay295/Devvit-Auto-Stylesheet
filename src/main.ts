@@ -172,8 +172,12 @@ Devvit.addTrigger({
 
 		const newStylesheet = createStylesheet(generatedStyles, extraStyles);
 		if (newStylesheet === null) {
-			// send mod mail?
-			// throw exception?
+			await reddit.modMail.createConversation({
+				to: null, // creates internal moderator discussion
+				subject: 'Auto-Stylesheet Failed to Update',
+				body: '',
+				subredditName: subreddit.name
+			});
 		} else {
 			// https://developers.reddit.com/docs/api/redditapi/classes/RedditAPIClient.RedditAPIClient#updatewikipage
 			await reddit.updateWikiPage({
