@@ -70,7 +70,7 @@ async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Pr
 }`;
 	}
 
-	if (subredditSettings.bannerHeight) {
+	/*if (subredditSettings.bannerHeight) {
 		generatedStyles += `
 #header {
 	height: ` + subredditSettings.bannerHeight + `;
@@ -81,21 +81,21 @@ async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Pr
 		generatedStyles += `
 #header {
 	background-image: url(` + subredditSettings.bannerBackgroundImage + `);`;
-	if (subredditSettings.bannerPosition == 'fill') {
-		generatedStyles += `
+		if (subredditSettings.bannerPosition == 'fill') {
+			generatedStyles += `
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
 `;
-	} else if (subredditSettings.bannerPosition == 'tile') {
-		generatedStyles += `
+		} else if (subredditSettings.bannerPosition == 'tile') {
+			generatedStyles += `
 	background-position: center top;
 	background-repeat: repeat;
 	background-size: auto;
 `;
-	}
+		}
 		generatedStyles += '}';
-	}
+	}*/
 
 	if (subredditSettings.bannerImage) {
 		generatedStyles += `
