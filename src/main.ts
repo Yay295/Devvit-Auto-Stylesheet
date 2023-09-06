@@ -1,5 +1,5 @@
 import { Devvit, OnTriggerEvent, Subreddit } from '@devvit/public-api';
-import { ModAction } from '@devvit/protos';
+import { AppInstall, AppUpgrade, ModAction } from '@devvit/protos';
 
 Devvit.configure({
 	redditAPI: true
@@ -148,10 +148,10 @@ function createStylesheet(generatedStyles: string, extraStyles: string): string 
 
 // https://developers.reddit.com/docs/event_triggers/
 Devvit.addTrigger({
-	event: 'ModAction',
-	onEvent: async (event: OnTriggerEvent<ModAction>, context: Devvit.Context) => {
+	events: ['AppInstall','AppUpgrade','ModAction'],
+	onEvent: async (event: OnTriggerEvent<AppInstall|AppUpgrade|ModAction>, context: Devvit.Context) => {
 		// https://developers.reddit.com/docs/mod_actions/
-		if (event.action !== 'community_styling') {
+		if (event.type === 'ModAction' && (event as ModAction).action !== 'community_styling') {
 			return;
 		}
 
