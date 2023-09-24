@@ -1,4 +1,4 @@
-import { Devvit, OnTriggerEvent, Subreddit } from '@devvit/public-api';
+import { Devvit, OnTriggerEvent, Subreddit, TriggerContext } from '@devvit/public-api';
 import { AppInstall, AppUpgrade, ModAction } from '@devvit/protos';
 
 Devvit.configure({
@@ -23,7 +23,7 @@ const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 const STYLESHEET_MAX_LENGTH = 100000;
 
-async function generateStyles(context: Devvit.Context, subreddit: Subreddit): Promise<string> {
+async function generateStyles(context: TriggerContext, subreddit: Subreddit): Promise<string> {
 	const contextSettings = await context.settings.getAll();
 	const subredditSettings = subreddit.settings;
 
@@ -154,7 +154,7 @@ function createStylesheet(extraStylesBefore: string, generatedStyles: string, ex
 // https://developers.reddit.com/docs/event_triggers/
 Devvit.addTrigger({
 	events: ['AppInstall','AppUpgrade','ModAction'],
-	onEvent: async (event: OnTriggerEvent<AppInstall|AppUpgrade|ModAction>, context: Devvit.Context) => {
+	onEvent: async (event: OnTriggerEvent<AppInstall | AppUpgrade | ModAction>, context: TriggerContext) => {
 		// https://developers.reddit.com/docs/mod_actions/
 		if (event.type === 'ModAction' && (event as ModAction).action !== 'community_styling') {
 			return;
@@ -162,7 +162,7 @@ Devvit.addTrigger({
 
 		const { reddit } = context;
 		const subreddit = await reddit.getSubredditById(context.subredditId);
-		//const subreddit = event.subreddit; // possibly undefined?
+		//const { subreddit } = event; // possibly undefined?
 
 		const generatedStyles = await generateStyles(context, subreddit);
 
