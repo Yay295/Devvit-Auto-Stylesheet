@@ -223,6 +223,7 @@ function createStylesheet(extraStylesBefore: string, generatedStyles: string, ex
 
 // https://developers.reddit.com/docs/event_triggers/
 Devvit.addTrigger({
+	// TODO trigger on app settings change
 	events: ['AppInstall','AppUpgrade','ModAction'],
 	onEvent: async (event: OnTriggerEvent<AppInstall | AppUpgrade | ModAction>, context: TriggerContext) => {
 		// https://developers.reddit.com/docs/mod_actions/
