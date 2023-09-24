@@ -2,7 +2,8 @@ import { Devvit, OnTriggerEvent, Subreddit, TriggerContext } from '@devvit/publi
 import { AppInstall, AppUpgrade, ModAction } from '@devvit/protos';
 
 Devvit.configure({
-	redditAPI: true
+	redditAPI: true,
+	http: true
 });
 
 // Will need "edit config" permissions.
@@ -19,6 +20,73 @@ Devvit.addSettings([
 	}
 ]);
 
+
+type ColorString = string;
+type UrlString = string;
+
+type StructuredStyles = {
+	data?: {
+		content?: {
+			widgets?: {
+				items?: any;
+				layout?: any;
+			};
+		};
+		style?: {
+			menuBackgroundBlur?: any | null;
+			bannerShowCommunityIcon?: "hide" | string | null;
+			postDownvoteIconInactive?: UrlString | null;
+			bannerCommunityNameFormat?: "hide" | "slashtag" | string | null;
+			postUpvoteIconInactive?: UrlString | null;
+			highlightColor?: ColorString | null;
+			menuBackgroundOpacity?: any | null;
+			postUpvoteCountColor?: ColorString | null;
+			bannerHeight?: "medium" | "large" | string | null;
+			postBackgroundColor?: any | null;
+			mobileBannerImage?: any | null;
+			bannerOverlayColor?: any | null;
+			bannerCommunityName?: any | null;
+			postDownvoteIconActive?: UrlString | null;
+			postUpvoteIconActive?: UrlString | null;
+			menuBackgroundColor?: any | null;
+			postBackgroundImagePosition?: any | null;
+			backgroundImage?: UrlString | null;
+			backgroundImagePosition?: "centered" | string | null;
+			backgroundColor?: ColorString | null;
+			submenuBackgroundStyle?: any | null;
+			bannerBackgroundImagePosition?: any | null;
+			menuLinkColorInactive?: ColorString | null;
+			bannerBackgroundColor?: ColorString | null;
+			submenuBackgroundColor?: ColorString | null;
+			sidebarWidgetHeaderColor?: ColorString | null;
+			bannerPositionedImagePosition?: any | null;
+			bannerBackgroundImage?: UrlString | null;
+			postDownvoteCountColor?: ColorString | null;
+			postPlaceholderImagePosition?: any | null;
+			menuLinkColorHover?: ColorString | null;
+			primaryColor?: ColorString | null;
+			sidebarWidgetBackgroundColor?: ColorString | null;
+			mobileKeyColor?: ColorString | null;
+			menuPosition?: any | null;
+			postVoteIcons?: string | null;
+			menuLinkColorActive?: ColorString | null;
+			bannerPositionedImage?: UrlString | null;
+			secondaryBannerPositionedImage?: any | null;
+			menuBackgroundImage?: any | null;
+			postBackgroundImage?: any | null;
+			postPlaceholderImage?: any | null;
+			communityIcon?: UrlString | null;
+			postTitleColor?: ColorString | null;
+		};
+		flairTemplate?: any;
+	}
+}
+
+async function getSubredditStructuredStyles(subreddit: string): Promise<StructuredStyles> {
+	return fetch('https://www.reddit.com/api/v1/structured_styles/' + subreddit + '.json').then(response => response.json());
+}
+
+
 const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 const STYLESHEET_MAX_LENGTH = 100000;
@@ -26,6 +94,7 @@ const STYLESHEET_MAX_LENGTH = 100000;
 async function generateStyles(context: TriggerContext, subreddit: Subreddit): Promise<string> {
 	const contextSettings = await context.settings.getAll();
 	const subredditSettings = subreddit.settings;
+	const structuredStyles = (await getSubredditStructuredStyles(subreddit.name))?.data?.style ?? {};
 
 	let generatedStyles = '';
 
@@ -70,10 +139,10 @@ async function generateStyles(context: TriggerContext, subreddit: Subreddit): Pr
 }`;
 	}
 
-	/*if (subredditSettings.bannerHeight) {
+	if (structuredStyles?.bannerHeight) {
 		generatedStyles += `
 #header {
-	height: ` + subredditSettings.bannerHeight + `;
+	height: ` + structuredStyles.bannerHeight + `;
 }`;
 	}
 
@@ -81,13 +150,13 @@ async function generateStyles(context: TriggerContext, subreddit: Subreddit): Pr
 		generatedStyles += `
 #header {
 	background-image: url(` + subredditSettings.bannerBackgroundImage + `);`;
-		if (subredditSettings.bannerPosition == 'fill') {
+		if (structuredStyles.bannerBackgroundImagePosition == 'fill') {
 			generatedStyles += `
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
 `;
-		} else if (subredditSettings.bannerPosition == 'tile') {
+		} else if (structuredStyles.bannerBackgroundImagePosition == 'tile') {
 			generatedStyles += `
 	background-position: center top;
 	background-repeat: repeat;
@@ -95,7 +164,7 @@ async function generateStyles(context: TriggerContext, subreddit: Subreddit): Pr
 `;
 		}
 		generatedStyles += '}';
-	}*/
+	}
 
 	if (subredditSettings.bannerImage) {
 		generatedStyles += `
@@ -150,6 +219,7 @@ function createStylesheet(extraStylesBefore: string, generatedStyles: string, ex
 
 	throw new Error('New stylesheet is too big.');
 }
+
 
 // https://developers.reddit.com/docs/event_triggers/
 Devvit.addTrigger({
