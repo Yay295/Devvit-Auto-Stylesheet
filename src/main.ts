@@ -37,7 +37,7 @@ Devvit.addTrigger({
 		//const { subreddit } = event; // possibly undefined?
 
 		try {
-			const generatedStyles = await generateStyles(context, subreddit);
+			const generatedStyles = await generateStyles(await context.settings.getAll(), subreddit);
 
 			const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
 			const [extraStylesBefore, extraStylesAfter] = (() => {
