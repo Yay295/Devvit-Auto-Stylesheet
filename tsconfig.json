@@ -1,3 +1,7 @@
 {
-  "extends": "@devvit/tsconfig/devvit.tsconfig.json"
+  "extends": "@devvit/tsconfig/devvit.tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "./built/**/*"
+  ]
 }
