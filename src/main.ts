@@ -34,26 +34,26 @@ type StructuredStyles = {
 		};
 		style?: {
 			menuBackgroundBlur?: any | null;
-			bannerShowCommunityIcon?: "hide" | string | null;
+			bannerShowCommunityIcon?: 'show' | 'hide' | null;
 			postDownvoteIconInactive?: UrlString | null;
-			bannerCommunityNameFormat?: "hide" | "slashtag" | string | null;
+			bannerCommunityNameFormat?: 'slashtag' | 'hide' | 'pretty' | null;
 			postUpvoteIconInactive?: UrlString | null;
 			highlightColor?: ColorString | null;
-			menuBackgroundOpacity?: any | null;
+			menuBackgroundOpacity?: string | null;
 			postUpvoteCountColor?: ColorString | null;
-			bannerHeight?: "medium" | "large" | string | null;
-			postBackgroundColor?: any | null;
-			mobileBannerImage?: any | null;
-			bannerOverlayColor?: any | null;
+			bannerHeight?: 'small' | 'medium' | 'large' | null;
+			postBackgroundColor?: ColorString | null;
+			mobileBannerImage?: UrlString | null;
+			bannerOverlayColor?: ColorString | null;
 			bannerCommunityName?: any | null;
 			postDownvoteIconActive?: UrlString | null;
 			postUpvoteIconActive?: UrlString | null;
 			menuBackgroundColor?: any | null;
 			postBackgroundImagePosition?: any | null;
 			backgroundImage?: UrlString | null;
-			backgroundImagePosition?: "centered" | string | null;
+			backgroundImagePosition?: 'centered' | string | null;
 			backgroundColor?: ColorString | null;
-			submenuBackgroundStyle?: any | null;
+			submenuBackgroundStyle?: 'default' | 'custom' | null;
 			bannerBackgroundImagePosition?: any | null;
 			menuLinkColorInactive?: ColorString | null;
 			bannerBackgroundColor?: ColorString | null;
@@ -68,13 +68,13 @@ type StructuredStyles = {
 			sidebarWidgetBackgroundColor?: ColorString | null;
 			mobileKeyColor?: ColorString | null;
 			menuPosition?: any | null;
-			postVoteIcons?: string | null;
+			postVoteIcons?: 'default' | 'custom' | null;
 			menuLinkColorActive?: ColorString | null;
 			bannerPositionedImage?: UrlString | null;
-			secondaryBannerPositionedImage?: any | null;
-			menuBackgroundImage?: any | null;
-			postBackgroundImage?: any | null;
-			postPlaceholderImage?: any | null;
+			secondaryBannerPositionedImage?: UrlString | null;
+			menuBackgroundImage?: UrlString | null;
+			postBackgroundImage?: UrlString | null;
+			postPlaceholderImage?: UrlString | null;
 			communityIcon?: UrlString | null;
 			postTitleColor?: ColorString | null;
 		};
@@ -90,6 +90,130 @@ async function getSubredditStructuredStyles(subreddit: string): Promise<Structur
 const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 const STYLESHEET_MAX_LENGTH = 100000;
+
+/**
+ * The New Reddit subreddit styles, in the same layout they are on the website.
+ * Mod Tools -> Settings -> Community Appearance -> Appearance
+ */
+type SubredditStyles = {
+	colorTheme: {
+		themeColors: {
+			base: ColorString;
+			highlight: ColorString;
+		};
+		bodyBackground: {
+			color: ColorString;
+			image: UrlString | null;
+		};
+	};
+	nameAndIcon: {
+		nameFormat: 'slashtag' | 'pretty' | 'hide';
+		image: UrlString | null;
+		hideIconInBanner: boolean; // 'show' | 'hide'
+	};
+	banner: {
+		height: 'small' | 'medium' | 'large';
+		backgroundColor: ColorString;
+		backgroundImage: UrlString | null;
+		additionalBackgroundImage: UrlString | null;
+		mobileBannerImage: UrlString | null;
+	};
+	menu: {
+		linkColors: {
+			activePage: ColorString;
+			inactivePage: ColorString;
+			hover: ColorString;
+		};
+		mainMenuBackground: {
+			color: ColorString;
+			opacity: string;
+		};
+		submenuBackground: {
+			style: 'default' | 'custom';
+			color: ColorString;
+		}
+	};
+	posts: {
+		titleColor: ColorString;
+		voteIcons: {
+			custom: boolean; // 'default' | 'custom'
+			upvoteInactive: UrlString | null;
+			upvoteActive: UrlString | null;
+			upvoteCountColor: ColorString;
+			downvoteInactive: UrlString | null;
+			downvoteActive: UrlString | null;
+			downvoteCountColor: ColorString;
+		};
+		postBackground: {
+			color: ColorString;
+			image: UrlString | null;
+		};
+		linkPreviewPlaceholderImage: UrlString | null;
+	}
+};
+
+/**
+ * Creates a SubredditStyles object from the styles in the given data.
+ */
+async function validateStyles(subreddit: Subreddit): Promise<SubredditStyles> {
+	const structuredStyles = (await getSubredditStructuredStyles(subreddit.name))?.data?.style ?? {};
+	return {
+		colorTheme: {
+			themeColors: {
+				base: structuredStyles.primaryColor ?? '#0079d3',
+				highlight: structuredStyles.highlightColor ?? '#0079d3'
+			},
+			bodyBackground: {
+				color: structuredStyles.backgroundColor ?? '#dae0e6',
+				image: structuredStyles.backgroundImage ?? null
+			}
+		},
+		nameAndIcon: {
+			nameFormat: structuredStyles.bannerCommunityNameFormat ?? 'slashtag',
+			image: structuredStyles.communityIcon ?? null,
+			hideIconInBanner: structuredStyles.bannerShowCommunityIcon === 'hide'
+		},
+		banner: {
+			height: structuredStyles.bannerHeight ?? 'small',
+			backgroundColor: structuredStyles.bannerBackgroundColor ?? '#33a8ff',
+			backgroundImage: structuredStyles.bannerBackgroundImage ?? null,
+			additionalBackgroundImage: structuredStyles.secondaryBannerPositionedImage ?? null,
+			mobileBannerImage: structuredStyles.mobileBannerImage ?? null
+		},
+		menu: {
+			linkColors: {
+				activePage: structuredStyles.menuLinkColorActive ?? '#0079d3',
+				inactivePage: structuredStyles.menuLinkColorInactive ?? '#0079d3',
+				hover: structuredStyles.menuLinkColorHover ?? '#0079d3'
+			},
+			mainMenuBackground: {
+				color: structuredStyles.menuBackgroundColor ?? '#dbf0ff',
+				opacity: structuredStyles.menuBackgroundOpacity ?? '70'
+			},
+			submenuBackground: {
+				style: structuredStyles.submenuBackgroundStyle ?? 'default',
+				color: structuredStyles.submenuBackgroundColor ?? '#dbf0ff'
+			}
+		},
+		posts: {
+			titleColor: structuredStyles.postTitleColor ?? '#222222',
+			voteIcons: {
+				custom: structuredStyles.postVoteIcons === 'custom',
+				upvoteInactive: structuredStyles.postUpvoteIconInactive ?? null,
+				upvoteActive: structuredStyles.postUpvoteIconActive ?? null,
+				upvoteCountColor: structuredStyles.postUpvoteCountColor ?? '#ff4500',
+				downvoteInactive: structuredStyles.postDownvoteIconInactive ?? null,
+				downvoteActive: structuredStyles.postDownvoteIconActive ?? null,
+				downvoteCountColor: structuredStyles.postDownvoteCountColor ?? '#7193ff'
+			},
+			postBackground: {
+				color: structuredStyles.postBackgroundColor ?? '#ffffff',
+				image: structuredStyles.postBackgroundImage ?? null
+			},
+			linkPreviewPlaceholderImage: structuredStyles.postPlaceholderImage ?? null
+		}
+	};
+}
 
 async function generateStyles(context: TriggerContext, subreddit: Subreddit): Promise<string> {
 	const contextSettings = await context.settings.getAll();
