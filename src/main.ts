@@ -112,7 +112,7 @@ async function generateStyles(context: TriggerContext, subreddit: Subreddit): Pr
  * The generated styles will be minified if necessary, but the extra styles will only be trimmed.
  * If the CSS cannot be minified to fit under the limit, this function will return null.
  */
-function createStylesheet(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string): string | null {
+function createStylesheet(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string): string {
 	function computeTotalLength(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string, spacer: string): number {
 		return (extraStylesBefore ? extraStylesBefore.length + spacer.length : 0)
 			+ STYLESHEET_HEADER.length + spacer.length + generatedStyles.length + spacer.length + STYLESHEET_FOOTER.length
@@ -148,7 +148,7 @@ function createStylesheet(extraStylesBefore: string, generatedStyles: string, ex
 
 	// TODO more minification strategies
 
-	return null;
+	throw new Error('New stylesheet is too big.');
 }
 
 // https://developers.reddit.com/docs/event_triggers/
@@ -164,42 +164,52 @@ Devvit.addTrigger({
 		const subreddit = await reddit.getSubredditById(context.subredditId);
 		//const { subreddit } = event; // possibly undefined?
 
-		const generatedStyles = await generateStyles(context, subreddit);
+		try {
+			const generatedStyles = await generateStyles(context, subreddit);
 
-		const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
-		const [extraStylesBefore, extraStylesAfter] = (() => {
-			const generatedStylesStart = currentStylesheet.indexOf(STYLESHEET_HEADER);
-			const extraStylesBefore = generatedStylesStart > 0 ? currentStylesheet.substring(0, generatedStylesStart) : '';
+			const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
+			const [extraStylesBefore, extraStylesAfter] = (() => {
+				const generatedStylesStart = currentStylesheet.indexOf(STYLESHEET_HEADER);
+				const extraStylesBefore = generatedStylesStart > 0 ? currentStylesheet.substring(0, generatedStylesStart) : '';
 
-			const generatedStylesEnd = currentStylesheet.indexOf(STYLESHEET_FOOTER, generatedStylesStart);
+				const generatedStylesEnd = currentStylesheet.indexOf(STYLESHEET_FOOTER, generatedStylesStart);
 
-			if (generatedStylesEnd > -1) {
-				// possible header, definite footer
-				return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
-			} else if (generatedStylesStart > -1) {
-				// definite header, no footer
-				return [extraStylesBefore, ''];
-			} else {
-				// no header, no footer
-				return ['', currentStylesheet];
-			}
-		})();
+				if (generatedStylesEnd > -1) {
+					// possible header, definite footer
+					return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
+				} else if (generatedStylesStart > -1) {
+					// definite header, no footer
+					return [extraStylesBefore, ''];
+				} else {
+					// no header, no footer
+					return ['', currentStylesheet];
+				}
+			})();
 
-		const newStylesheet = createStylesheet(extraStylesBefore, generatedStyles, extraStylesAfter);
-		if (newStylesheet === null) {
-			await reddit.modMail.createConversation({
-				to: null, // creates internal moderator discussion
-				subject: 'Auto-Stylesheet Failed to Update',
-				body: '',
-				subredditName: subreddit.name
-			});
-		} else {
+			const newStylesheet = createStylesheet(extraStylesBefore, generatedStyles, extraStylesAfter);
 			// https://developers.reddit.com/docs/api/redditapi/classes/RedditAPIClient.RedditAPIClient#updatewikipage
 			await reddit.updateWikiPage({
 				content: newStylesheet,
 				page: 'config/stylesheet',
 				subredditName: subreddit.name
 			});
+		} catch (e) {
+			let message;
+			if (e instanceof Error) {
+				message = e.stack ?? e.message;
+			} else {
+				message = e ? String(e) : 'An unknown error occurred.';
+			}
+			try {
+				await reddit.modMail.createConversation({
+					to: null, // creates internal moderator discussion
+					subject: 'Auto-Stylesheet Failed to Update',
+					body: message,
+					subredditName: subreddit.name
+				});
+			} catch (modmailError) {
+				console.error('Error sending mod mail for error:', modmailError, '\nPrevious Error:', e);
+			}
 		}
 	}
 });
