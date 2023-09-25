@@ -8,6 +8,7 @@ const STYLESHEET_MAX_LENGTH = 100000;
 /**
  * The New Reddit subreddit styles, in the same layout they are on the website.
  * Mod Tools -> Settings -> Community Appearance -> Appearance
+ * The website uses the word "fill" for the "cover" image positions.
  */
 type SubredditStyles = {
 	colorTheme: {
@@ -18,6 +19,7 @@ type SubredditStyles = {
 		bodyBackground: {
 			color: ColorString;
 			image: UrlString | null;
+			imagePosition: 'cover' | 'tiled' | 'centered' | null;
 		};
 	};
 	nameAndIcon: {
@@ -29,8 +31,10 @@ type SubredditStyles = {
 		height: 'small' | 'medium' | 'large';
 		backgroundColor: ColorString;
 		backgroundImage: UrlString | null;
-		backgroundImagePosition: string | null; // TODO list actual values
+		backgroundImagePosition: 'cover' | 'tiled' | null;
 		additionalBackgroundImage: UrlString | null;
+		hoverImage: UrlString | null;
+		hoverImagePosition: 'left' | 'centered' | 'right' | null;
 		mobileBannerImage: UrlString | null;
 	};
 	menu: {
@@ -62,8 +66,12 @@ type SubredditStyles = {
 		postBackground: {
 			color: ColorString;
 			image: UrlString | null;
+			imagePosition: 'cover' | 'tiled';
 		};
-		linkPreviewPlaceholderImage: UrlString | null;
+		linkPreviewPlaceholder: {
+			image: UrlString | null;
+			imagePosition: 'cover' | 'tiled';
+		}
 	};
 };
 
@@ -80,7 +88,8 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 			},
 			bodyBackground: {
 				color: styles.backgroundColor ?? '#dae0e6',
-				image: styles.backgroundImage ?? null
+				image: styles.backgroundImage ?? null,
+				imagePosition: styles.backgroundImagePosition ?? 'cover'
 			}
 		},
 		nameAndIcon: {
@@ -92,8 +101,10 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 			height: styles.bannerHeight ?? 'small',
 			backgroundColor: styles.bannerBackgroundColor ?? '#33a8ff',
 			backgroundImage: styles.bannerBackgroundImage ?? null,
-			backgroundImagePosition: styles.backgroundImagePosition ?? '', // TODO what is the default?
+			backgroundImagePosition: styles.bannerBackgroundImagePosition ?? 'cover',
 			additionalBackgroundImage: styles.secondaryBannerPositionedImage ?? null,
+			hoverImage: styles.bannerPositionedImage ?? null,
+			hoverImagePosition: styles.bannerPositionedImagePosition ?? 'left',
 			mobileBannerImage: styles.mobileBannerImage ?? null
 		},
 		menu: {
@@ -124,9 +135,13 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 			},
 			postBackground: {
 				color: styles.postBackgroundColor ?? '#ffffff',
-				image: styles.postBackgroundImage ?? null
+				image: styles.postBackgroundImage ?? null,
+				imagePosition: styles.postBackgroundImagePosition ?? 'cover'
 			},
-			linkPreviewPlaceholderImage: styles.postPlaceholderImage ?? null
+			linkPreviewPlaceholder: {
+				image: styles.postPlaceholderImage ?? null,
+				imagePosition: styles.postPlaceholderImagePosition ?? 'cover'
+			}
 		}
 	};
 }
@@ -185,13 +200,13 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 		generatedStyles += `
 #header {
 	background-image: url(` + styles.banner.backgroundImage + `);`;
-		if (styles.banner.backgroundImagePosition == 'fill') {
+		if (styles.banner.backgroundImagePosition == 'cover') {
 			generatedStyles += `
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
 `;
-		} else if (styles.banner.backgroundImagePosition == 'tile') {
+		} else if (styles.banner.backgroundImagePosition == 'tiled') {
 			generatedStyles += `
 	background-position: center top;
 	background-repeat: repeat;

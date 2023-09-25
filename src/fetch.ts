@@ -27,21 +27,21 @@ export type StructuredStyles = {
 			bannerCommunityName?: any | null;
 			postDownvoteIconActive?: UrlString | null;
 			postUpvoteIconActive?: UrlString | null;
-			menuBackgroundColor?: any | null;
-			postBackgroundImagePosition?: any | null;
+			menuBackgroundColor?: ColorString | null;
+			postBackgroundImagePosition?: 'cover' | 'tiled' | null; // cover = fill
 			backgroundImage?: UrlString | null;
-			backgroundImagePosition?: 'centered' | string | null;
+			backgroundImagePosition?: 'cover' | 'tiled' | 'centered' | null; // cover = fill
 			backgroundColor?: ColorString | null;
 			submenuBackgroundStyle?: 'default' | 'custom' | null;
-			bannerBackgroundImagePosition?: any | null;
+			bannerBackgroundImagePosition?: 'cover' | 'tiled' | null; // cover = fill
 			menuLinkColorInactive?: ColorString | null;
 			bannerBackgroundColor?: ColorString | null;
 			submenuBackgroundColor?: ColorString | null;
 			sidebarWidgetHeaderColor?: ColorString | null;
-			bannerPositionedImagePosition?: any | null;
+			bannerPositionedImagePosition?: 'left' | 'centered' | 'right' | null;
 			bannerBackgroundImage?: UrlString | null;
 			postDownvoteCountColor?: ColorString | null;
-			postPlaceholderImagePosition?: any | null;
+			postPlaceholderImagePosition?: 'cover' | 'tiled' | null; // cover = fill
 			menuLinkColorHover?: ColorString | null;
 			primaryColor?: ColorString | null;
 			sidebarWidgetBackgroundColor?: ColorString | null;
