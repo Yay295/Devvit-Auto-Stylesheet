@@ -43,9 +43,7 @@ Devvit.addTrigger({
 			const [extraStylesBefore, extraStylesAfter] = (() => {
 				const generatedStylesStart = currentStylesheet.indexOf(STYLESHEET_HEADER);
 				const extraStylesBefore = generatedStylesStart > 0 ? currentStylesheet.substring(0, generatedStylesStart) : '';
-
 				const generatedStylesEnd = currentStylesheet.indexOf(STYLESHEET_FOOTER, generatedStylesStart);
-
 				if (generatedStylesEnd > -1) {
 					// possible header, definite footer
 					return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
