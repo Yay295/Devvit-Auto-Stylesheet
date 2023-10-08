@@ -58,13 +58,24 @@ Devvit.addTrigger({
 				}
 			})();
 
-			const newStylesheet = createStylesheet(extraStylesBefore, generatedStyles, extraStylesAfter);
-			// https://developers.reddit.com/docs/api/redditapi/classes/RedditAPIClient.RedditAPIClient#updatewikipage
-			await reddit.updateWikiPage({
-				content: newStylesheet,
-				page: 'config/stylesheet',
-				subredditName: subreddit.name
-			});
+			for (const newStylesheet of createStylesheet(extraStylesBefore, generatedStyles, extraStylesAfter)) {
+				try {
+					// https://developers.reddit.com/docs/api/redditapi/classes/RedditAPIClient.RedditAPIClient#updatewikipage
+					await reddit.updateWikiPage({
+						content: newStylesheet,
+						page: 'config/stylesheet',
+						subredditName: subreddit.name
+					});
+				} catch (e) {
+					// Only catch the "stylesheet is too big" error.
+					// TODO What error is the "stylesheet is too big" error?
+					if (false) {
+						continue;
+					} else {
+						throw e;
+					}
+				}
+			}
 		} catch (e) {
 			let message;
 			if (e instanceof Error) {

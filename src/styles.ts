@@ -3,7 +3,6 @@ import { ColorString, StructuredStyles, UrlString, getSubredditStructuredStyles 
 
 export const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
-const STYLESHEET_MAX_LENGTH = 100000;
 
 /**
  * The New Reddit subreddit styles, in the same layout they are on the website.
@@ -222,14 +221,9 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 /**
  * Combines the header, generated styles, footer, and extra styles.
  * The generated styles will be minified if necessary, but the extra styles will only be trimmed.
- * If the CSS cannot be minified to fit under the limit, this function will return null.
+ * This generator function returns successively more minified stylesheets. When it runs out of minification strategies it will throw an error.
  */
-export function createStylesheet(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string): string {
-	function computeTotalLength(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string, spacer: string): number {
-		return (extraStylesBefore ? extraStylesBefore.length + spacer.length : 0)
-			+ STYLESHEET_HEADER.length + spacer.length + generatedStyles.length + spacer.length + STYLESHEET_FOOTER.length
-			+ (extraStylesAfter ? spacer.length + extraStylesAfter.length : 0);
-	}
+export function* createStylesheet(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string): Generator<string> {
 	function merge(extraStylesBefore: string, generatedStyles: string, extraStylesAfter: string, spacer: string): string {
 		return (extraStylesBefore ? extraStylesBefore + spacer : '')
 			+ STYLESHEET_HEADER + spacer + generatedStyles + spacer + STYLESHEET_FOOTER
@@ -242,21 +236,15 @@ export function createStylesheet(extraStylesBefore: string, generatedStyles: str
 	let spacer = '\n\n';
 
 	// No minification.
-	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
-	}
+	yield merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 
 	// Try using a smaller spacer.
 	spacer = '\n';
-	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
-	}
+	yield merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 
 	// Try removing indentation.
 	generatedStyles = generatedStyles.replace(/^\s+/g, '');
-	if (computeTotalLength(extraStylesBefore, generatedStyles, extraStylesAfter, spacer) < STYLESHEET_MAX_LENGTH) {
-		return merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
-	}
+	yield merge(extraStylesBefore, generatedStyles, extraStylesAfter, spacer);
 
 	// TODO more minification strategies
 
