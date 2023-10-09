@@ -12,10 +12,13 @@ export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 type SubredditStyles = {
 	colorTheme: {
 		themeColors: {
+			/** Color for subreddit icon background and sidebar section title background. Also changes banner background (if it isn't set), but to a complimentary color. */
 			base: ColorString;
+			/** Color for icons, sidebar button backgrounds, and links. Actual displayed color is limited to keep it from being too bright. */
 			highlight: ColorString;
 		};
 		bodyBackground: {
+			/** Color for page body background. */
 			color: ColorString;
 			image: UrlString | null;
 			imagePosition: 'cover' | 'tiled' | 'centered' | null;
@@ -27,6 +30,7 @@ type SubredditStyles = {
 		hideIconInBanner: boolean; // 'show' | 'hide'
 	};
 	banner: {
+		/** The pixel heights listed on the subreddit banner style page are wrong. The actual heights are: 80px, 144px, and 208px. */
 		height: 'small' | 'medium' | 'large';
 		backgroundColor: ColorString;
 		backgroundImage: UrlString | null;
@@ -36,6 +40,7 @@ type SubredditStyles = {
 		hoverImagePosition: 'left' | 'centered' | 'right' | null;
 		mobileBannerImage: UrlString | null;
 	};
+	/** There is no menu on Old Reddit, so we don't need to do anything with these styles. */
 	menu: {
 		linkColors: {
 			activePage: ColorString;
@@ -78,12 +83,27 @@ type SubredditStyles = {
  * Creates a SubredditStyles object from the styles in the given data.
  */
 async function validateStyles(structuredStyles: StructuredStyles): Promise<SubredditStyles> {
+	function limitHighlightColor(highlightThemeColor: ColorString): string {
+		// TODO This color is limited to keep it from being too bright, but I'm not sure how.
+		// ex. #ffffff -> #e6e6e6, #fffff0 -> #ffffbd, #ffffbe -> #ffff8b
+		return highlightThemeColor;
+	}
+	function calculateBannerBackgroundColor(primaryThemeColor: ColorString | null | undefined): string {
+		if (!primaryThemeColor) {
+			return '#33a8ff';
+		}
+		// TODO How does Reddit calculate this?
+		// It's not the complimentary color; I tested the functions at https://stackoverflow.com/questions/1664140/js-function-to-calculate-complementary-colour and they don't match.
+		return '#33a8ff';
+	}
+
 	const styles = structuredStyles?.data?.style ?? {};
+
 	return {
 		colorTheme: {
 			themeColors: {
 				base: styles.primaryColor ?? '#0079d3',
-				highlight: styles.highlightColor ?? '#0079d3'
+				highlight: styles.highlightColor ? limitHighlightColor(styles.highlightColor) : '#0079d3'
 			},
 			bodyBackground: {
 				color: styles.backgroundColor ?? '#dae0e6',
@@ -98,7 +118,7 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 		},
 		banner: {
 			height: styles.bannerHeight ?? 'small',
-			backgroundColor: styles.bannerBackgroundColor ?? '#33a8ff',
+			backgroundColor: styles.bannerBackgroundColor ?? calculateBannerBackgroundColor(styles.primaryColor),
 			backgroundImage: styles.bannerBackgroundImage ?? null,
 			backgroundImagePosition: styles.bannerBackgroundImagePosition ?? 'cover',
 			additionalBackgroundImage: styles.secondaryBannerPositionedImage ?? null,
@@ -185,19 +205,22 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 }`;
 	}
 
+	const bannerHeight = {
+		'small': '80px',
+		'medium': '144px',
+		'large': '208px'
+	}[styles.banner.height];
 	generatedStyles += `
-#header {
+#header-bottom-left {
+	align-items: end;
 	background-color: ` + styles.banner.backgroundColor + `;
-}`;
-
-	generatedStyles += `
-#header {
-	height: ` + styles.banner.height + `; // todo string -> pixels
+	display: flex;
+	height: ` + bannerHeight + `;
 }`;
 
 	if (styles.banner.backgroundImage) {
 		generatedStyles += `
-#header {
+#header-bottom-left {
 	background-image: url(` + styles.banner.backgroundImage + `);`;
 		if (styles.banner.backgroundImagePosition == 'cover') {
 			generatedStyles += `
@@ -214,6 +237,14 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 		}
 		generatedStyles += '}';
 	}
+
+	generatedStyles += `
+a {
+	color: ` + styles.colorTheme.themeColors.highlight + `;
+}
+body {
+	background-color: ` + styles.colorTheme.bodyBackground.color + `;
+}`;
 
 	return generatedStyles.trim();
 }
