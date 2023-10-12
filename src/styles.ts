@@ -14,7 +14,7 @@ type SubredditStyles = {
 		themeColors: {
 			/** Color for subreddit icon background and sidebar section title background. Also changes banner background (if it isn't set), but to a complimentary color. */
 			base: ColorString;
-			/** Color for icons, sidebar button backgrounds, and links. Actual displayed color is limited to keep it from being too bright. */
+			/** Color for icons, sidebar button backgrounds, links, and the comment expando line on hover. Actual displayed color is limited to keep it from being too bright. */
 			highlight: ColorString;
 		};
 		bodyBackground: {
@@ -172,24 +172,26 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 	let generatedStyles = '';
 
 	if (appSettings['add-comment-collapse-bar']) {
-		// TODO use colors from new reddit styles
-		// new reddit uses '--newCommunityTheme-line' and '--newCommunityTheme-button'
-		const newCommunityThemeLine = '#EDEFF1';
-		const newCommunityThemeButton = '#5687E3';
+		// new reddit uses '--newCommunityTheme-line' for the line when not hovered
+		const newCommunityThemeLine = '#edeff1';
 		generatedStyles += `
+.comment {
+	position: relative;
+}
+.comment.noncollapsed {
+	padding-left: 23px;
+}
 .comment .expand {
 	position: absolute;
 	top: 0;
 	left: 0;
 	bottom: 0;
-	width: 18px;
-	text-align: center;
 }
 .comment .expand::after {
 	content: "";
 	position: absolute;
 	top: 17px;
-	left: 9px;
+	left: 8.5px;
 	bottom: 0;
 	border: ` + newCommunityThemeLine + ` solid 1px;
 }
@@ -197,7 +199,7 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 	display: none;
 }
 .comment .expand:hover::after {
-	border-color: ` + newCommunityThemeButton + `;
+	border-color: ` + styles.colorTheme.themeColors.highlight + `;
 	text-decoration: none;
 }
 .comment .child {
