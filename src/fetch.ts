@@ -1,7 +1,7 @@
 import { Devvit } from '@devvit/public-api';
 
 export type ColorString = string;
-export type UrlString = string;
+export type UrlString = string | null;
 
 export type StructuredStyles = {
 	data?: {

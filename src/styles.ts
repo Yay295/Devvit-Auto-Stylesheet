@@ -20,25 +20,25 @@ type SubredditStyles = {
 		bodyBackground: {
 			/** Color for page body background. */
 			color: ColorString;
-			image: UrlString | null;
-			imagePosition: 'cover' | 'tiled' | 'centered' | null;
+			image: UrlString;
+			imagePosition: 'cover' | 'tiled' | 'centered';
 		};
 	};
 	nameAndIcon: {
 		nameFormat: 'slashtag' | 'pretty' | 'hide';
-		image: UrlString | null;
+		image: UrlString;
 		hideIconInBanner: boolean; // 'show' | 'hide'
 	};
 	banner: {
 		/** The pixel heights listed on the subreddit banner style page are wrong. The actual heights are: 80px, 144px, and 208px. */
 		height: 'small' | 'medium' | 'large';
 		backgroundColor: ColorString;
-		backgroundImage: UrlString | null;
-		backgroundImagePosition: 'cover' | 'tiled' | null;
-		additionalBackgroundImage: UrlString | null;
-		hoverImage: UrlString | null;
-		hoverImagePosition: 'left' | 'centered' | 'right' | null;
-		mobileBannerImage: UrlString | null;
+		backgroundImage: UrlString;
+		backgroundImagePosition: 'cover' | 'tiled';
+		additionalBackgroundImage: UrlString;
+		hoverImage: UrlString;
+		hoverImagePosition: 'left' | 'centered' | 'right';
+		mobileBannerImage: UrlString;
 	};
 	/** There is no menu on Old Reddit, so we don't need to do anything with these styles. */
 	menu: {
@@ -60,20 +60,20 @@ type SubredditStyles = {
 		titleColor: ColorString;
 		voteIcons: {
 			custom: boolean; // 'default' | 'custom'
-			upvoteInactive: UrlString | null;
-			upvoteActive: UrlString | null;
+			upvoteInactive: UrlString;
+			upvoteActive: UrlString;
 			upvoteCountColor: ColorString;
-			downvoteInactive: UrlString | null;
-			downvoteActive: UrlString | null;
+			downvoteInactive: UrlString;
+			downvoteActive: UrlString;
 			downvoteCountColor: ColorString;
 		};
 		postBackground: {
 			color: ColorString;
-			image: UrlString | null;
+			image: UrlString;
 			imagePosition: 'cover' | 'tiled';
 		};
 		linkPreviewPlaceholder: {
-			image: UrlString | null;
+			image: UrlString;
 			imagePosition: 'cover' | 'tiled';
 		}
 	};
