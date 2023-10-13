@@ -207,6 +207,34 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 }`;
 	}
 
+	const bodyBackground = styles.colorTheme.bodyBackground;
+	if (bodyBackground.image) {
+		generatedStyles += `
+body {
+	background-image: url(` + bodyBackground.image + `);
+	background-attachment: fixed;`;
+		if (bodyBackground.imagePosition == 'cover') {
+			generatedStyles += `
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+`;
+		} else if (bodyBackground.imagePosition == 'tiled') {
+			generatedStyles += `
+	background-position: center top;
+	background-repeat: repeat;
+	background-size: auto;
+`;
+		} else if (bodyBackground.imagePosition == 'centered') {
+			generatedStyles += `
+	background-position: center top;
+	background-repeat: no-repeat;
+	background-size: auto;
+`;
+		}
+		generatedStyles += '}';
+	}
+
 	const bannerHeight = {
 		'small': '80px',
 		'medium': '144px',
