@@ -81,7 +81,7 @@ Devvit.addTrigger({
 		} catch (e) {
 			let message;
 			if (e instanceof Error) {
-				message = e.stack ?? e.message;
+				message = e.stack?.replace(/^/gm, '    ') ?? e.message;
 			} else {
 				message = e ? String(e) : 'An unknown error occurred.';
 			}
