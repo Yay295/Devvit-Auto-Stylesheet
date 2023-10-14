@@ -47,10 +47,10 @@ Devvit.addTrigger({
 			const [extraStylesBefore, extraStylesAfter] = (() => {
 				const generatedStylesStart = currentStylesheet.indexOf(STYLESHEET_HEADER);
 				const extraStylesBefore = generatedStylesStart > 0 ? currentStylesheet.substring(0, generatedStylesStart) : '';
-				const generatedStylesEnd = currentStylesheet.indexOf(STYLESHEET_FOOTER, generatedStylesStart);
+				const generatedStylesEnd = currentStylesheet.lastIndexOf(STYLESHEET_FOOTER, generatedStylesStart);
 				if (generatedStylesEnd > -1) {
 					// possible header, definite footer
-					return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.indexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
+					return [extraStylesBefore, currentStylesheet.substring(currentStylesheet.lastIndexOf(STYLESHEET_FOOTER) + STYLESHEET_FOOTER.length)];
 				} else if (generatedStylesStart > -1) {
 					// definite header, no footer
 					return [extraStylesBefore, ''];
