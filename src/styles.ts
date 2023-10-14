@@ -213,6 +213,13 @@ a {
 }
 body {
 	background-color: ` + styles.colorTheme.bodyBackground.color + `;
+}
+body > .content {
+	background-color: #fff;
+	margin: 10px 324px 10px 12px;
+}
+.side {
+	margin: 10px 12px;
 }`;
 
 	const bodyBackground = styles.colorTheme.bodyBackground;
