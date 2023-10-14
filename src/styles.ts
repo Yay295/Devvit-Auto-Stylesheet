@@ -1,5 +1,5 @@
 import { SettingsValues, Subreddit } from '@devvit/public-api';
-import { ColorString, StructuredStyles, UrlString, getSubredditStructuredStyles } from './fetch.js';
+import { ColorString, StructuredStyles, UrlString, getSubredditStructuredStyles, reuploadImage } from './fetch.js';
 
 export const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
@@ -208,10 +208,11 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 	}
 
 	const bodyBackground = styles.colorTheme.bodyBackground;
-	if (bodyBackground.image) {
+	const bodyBackgroundImage = await reuploadImage(subreddit.name, bodyBackground.image, 'auto-body-background');
+	if (bodyBackgroundImage) {
 		generatedStyles += `
 body {
-	background-image: url(` + bodyBackground.image + `);
+	background-image: url(` + bodyBackgroundImage + `);
 	background-attachment: fixed;`;
 		if (bodyBackground.imagePosition == 'cover') {
 			generatedStyles += `
@@ -248,10 +249,11 @@ body {
 	height: ` + bannerHeight + `;
 }`;
 
-	if (styles.banner.backgroundImage) {
+	const bannerBackgroundImage = await reuploadImage(subreddit.name, styles.banner.backgroundImage, 'auto-banner');
+	if (bannerBackgroundImage) {
 		generatedStyles += `
 #header-bottom-left {
-	background-image: url(` + styles.banner.backgroundImage + `);`;
+	background-image: url(` + bannerBackgroundImage + `);`;
 		if (styles.banner.backgroundImagePosition == 'cover') {
 			generatedStyles += `
 	background-position: center;
@@ -275,14 +277,15 @@ body {
 }`;
 
 	if (!styles.nameAndIcon.hideIconInBanner) {
-		if (styles.nameAndIcon.image) {
+		const communityIconImage = await reuploadImage(subreddit.name, styles.nameAndIcon.image, 'auto-subreddit-icon');
+		if (communityIconImage) {
 			generatedStyles += `
 .pagename a::before {
 	content: "",
 	display: inline-block;
 	width: 72px;
 	height: 72px;
-	background-image: url(` + styles.nameAndIcon.image + `);
+	background-image: url(` + communityIconImage + `);
 	background-size: cover;
 	border-color: #fff;
 	border-radius: 40px;
