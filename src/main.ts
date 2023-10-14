@@ -68,6 +68,7 @@ Devvit.addTrigger({
 						page: 'config/stylesheet',
 						subredditName: subreddit.name
 					});
+					break;
 				} catch (e) {
 					// Only catch the "stylesheet is too big" error.
 					// TODO What error is the "stylesheet is too big" error?
