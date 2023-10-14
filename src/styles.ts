@@ -207,6 +207,14 @@ export async function generateStyles(appSettings: SettingsValues, subreddit: Sub
 }`;
 	}
 
+	generatedStyles += `
+a {
+	color: ` + styles.colorTheme.themeColors.highlight + `;
+}
+body {
+	background-color: ` + styles.colorTheme.bodyBackground.color + `;
+}`;
+
 	const bodyBackground = styles.colorTheme.bodyBackground;
 	const bodyBackgroundImage = await reuploadImage(subreddit.name, bodyBackground.image, 'auto-body-background');
 	if (bodyBackgroundImage) {
@@ -295,14 +303,6 @@ body {
 }`;
 		}
 	}
-
-	generatedStyles += `
-a {
-	color: ` + styles.colorTheme.themeColors.highlight + `;
-}
-body {
-	background-color: ` + styles.colorTheme.bodyBackground.color + `;
-}`;
 
 	return generatedStyles.trim();
 }
