@@ -268,6 +268,31 @@ body {
 		generatedStyles += '}';
 	}
 
+	// Hide the Reddit logo. It gets in the way of the subreddit logo and is just unnecessary.
+	generatedStyles += `
+#header-img {
+	display: none;
+}`;
+
+	if (!styles.nameAndIcon.hideIconInBanner) {
+		if (styles.nameAndIcon.image) {
+			generatedStyles += `
+.pagename a::before {
+	content: "",
+	display: inline-block;
+	width: 72px;
+	height: 72px;
+	background-image: url(` + styles.nameAndIcon.image + `);
+	background-size: cover;
+	border-color: #fff;
+	border-radius: 40px;
+	border-style: solid;
+	border-width: 4px;
+	vertical-align: bottom;
+}`;
+		}
+	}
+
 	generatedStyles += `
 a {
 	color: ` + styles.colorTheme.themeColors.highlight + `;
