@@ -304,6 +304,14 @@ body {
 		}
 	}
 
+	generatedStyles += `
+.listing-page .link {
+	background-color: ` + styles.posts.postBackground.color + `;
+}
+.listing-page .link a.title {
+	color: ` + styles.posts.titleColor + `;
+}`;
+
 	return generatedStyles.trim();
 }
 
