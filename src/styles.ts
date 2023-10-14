@@ -287,7 +287,7 @@ body {
 
 	// Hide the Reddit logo. It gets in the way of the subreddit logo and is just unnecessary.
 	generatedStyles += `
-#header-img {
+#header-img.default-header {
 	display: none;
 }`;
 
