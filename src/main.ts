@@ -80,6 +80,7 @@ Devvit.addTrigger({
 				}
 			}
 		} catch (e) {
+			console.error(e);
 			let message;
 			if (e instanceof Error) {
 				message = e.stack?.replace(/^/gm, '    ') ?? e.message;
@@ -94,7 +95,7 @@ Devvit.addTrigger({
 					subredditName: subreddit.name
 				});
 			} catch (modmailError) {
-				console.error('Error sending mod mail for error:', modmailError, '\nPrevious Error:', e);
+				console.error('Error sending mod mail for error:', modmailError);
 			}
 		}
 	}
