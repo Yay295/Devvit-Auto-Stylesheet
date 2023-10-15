@@ -1,5 +1,6 @@
 import { SettingsValues, Subreddit } from '@devvit/public-api';
 import { ColorString, StructuredStyles, UrlString, getSubredditStructuredStyles, reuploadImage } from './fetch.js';
+import { AssetsClient } from '@devvit/public-api/apis/AssetsClient/AssetsClient.js';
 
 export const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
@@ -165,7 +166,7 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 	};
 }
 
-export async function generateStyles(appSettings: SettingsValues, subreddit: Subreddit): Promise<string> {
+export async function generateStyles(appSettings: SettingsValues, assets: AssetsClient, subreddit: Subreddit): Promise<string> {
 	const structuredStyles = await getSubredditStructuredStyles(subreddit.name);
 	const styles = await validateStyles(structuredStyles);
 
@@ -318,6 +319,63 @@ body {
 .listing-page .link a.title {
 	color: ` + styles.posts.titleColor + `;
 }`;
+
+	const voteIcons = styles.posts.voteIcons;
+	if (voteIcons.custom) {
+		generatedStyles += `
+.link .score.likes {
+	color: ` + voteIcons.upvoteCountColor + `;
+}
+.link .score.dislikes {
+	color: ` + voteIcons.downvoteCountColor + `;
+}`;
+
+		const upvoteActiveImage = await reuploadImage(subreddit.name, voteIcons.upvoteActive, 'auto-upvote-active');
+		const upvoteInactiveImage = await reuploadImage(subreddit.name, voteIcons.upvoteInactive, 'auto-upvote-inactive');
+		if (upvoteActiveImage && upvoteInactiveImage) {
+			generatedStyles += `
+.arrow.up {
+	background: url(` + upvoteActiveImage + `);
+}
+.arrow.upmod {
+	background: url(` + upvoteInactiveImage + `);
+}`;
+		} else {
+			const upvoteActiveMask = await reuploadImage(subreddit.name, await assets.getURL('upvote-mask.png'), 'auto-upvote-active');
+			if (upvoteActiveMask) {
+				generatedStyles += `
+.arrow.up, .arrow.upmod {
+	mask: luminance url(` + upvoteActiveMask + `);
+}
+.arrow.upmod {
+	background: ` + voteIcons.upvoteCountColor + `;
+}`;
+			}
+		}
+
+		const downvoteActiveImage = await reuploadImage(subreddit.name, voteIcons.downvoteActive, 'auto-downvote-active');
+		const downvoteInactiveImage = await reuploadImage(subreddit.name, voteIcons.downvoteInactive, 'auto-downvote-inactive');
+		if (downvoteActiveImage && downvoteInactiveImage) {
+			generatedStyles += `
+.arrow.down {
+	background: url(` + downvoteActiveImage + `);
+}
+.arrow.downmod {
+	background: url(` + downvoteInactiveImage + `);
+}`;
+		} else {
+			const downvoteActiveMask = await reuploadImage(subreddit.name, await assets.getURL('downvote-mask.png'), 'auto-downvote-active');
+			if (downvoteActiveMask) {
+				generatedStyles += `
+.arrow.down, .arrow.downmod {
+	mask: luminance url(` + downvoteActiveMask + `);
+}
+.arrow.downmod {
+	background: ` + voteIcons.downvoteCountColor + `;
+}`;
+			}
+		}
+	}
 
 	return generatedStyles.trim();
 }

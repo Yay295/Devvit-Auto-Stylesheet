@@ -125,7 +125,6 @@ type StylesheetImage = `%%${ImageName}%%`;
  * An image that is replaced will not be updated on the subreddit until the next time the stylesheet is saved.
  * Returns the given image name with '%%' added around it, or null if an error occurs.
  */
-const asdjasgjhdgas = true;
 export async function reuploadImage(subreddit: string, url: UrlString, imageName: ImageName): Promise<StylesheetImage | null> {
 	if (url == null) {
 		return null;
@@ -142,7 +141,10 @@ export async function reuploadImage(subreddit: string, url: UrlString, imageName
 
 	// Get image from URL.
 	// TODO Error: HTTP request to domain: styles.redditmedia.com is not allowed
-	if (asdjasgjhdgas) return null;
+	// TODO Error: HTTP request to domain: i.redd.it is not allowed
+	if (url.includes('styles.redditmedia.com') || url.includes('i.redd.it')) {
+		return null;
+	}
 	const imageData = await fetch(url).then(response => {
 		return response.ok ? response.blob() : null;
 	});

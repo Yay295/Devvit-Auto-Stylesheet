@@ -41,7 +41,7 @@ Devvit.addTrigger({
 				throw 'The subreddit wiki must be enabled for this bot to change the stylesheet. Please enable the wiki at /r/' + subreddit.name + '/about/edit?page=wikis.';
 			}
 
-			const generatedStyles = await generateStyles(await context.settings.getAll(), subreddit);
+			const generatedStyles = await generateStyles(await context.settings.getAll(), context.assets, subreddit);
 
 			const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
 			const [extraStylesBefore, extraStylesAfter] = (() => {
