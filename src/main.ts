@@ -1,5 +1,4 @@
-import { Devvit, OnTriggerEvent, TriggerContext } from '@devvit/public-api';
-import { AppInstall, AppUpgrade, ModAction } from '@devvit/protos';
+import { Devvit } from '@devvit/public-api';
 
 import { generateStyles, STYLESHEET_HEADER, STYLESHEET_FOOTER, createStylesheet } from './styles.js';
 
@@ -26,9 +25,9 @@ Devvit.addSettings([
 Devvit.addTrigger({
 	// TODO trigger on app settings change
 	events: ['AppInstall','AppUpgrade','ModAction'],
-	onEvent: async (event: OnTriggerEvent<AppInstall | AppUpgrade | ModAction>, context: TriggerContext) => {
+	onEvent: async (event,context) => {
 		// https://developers.reddit.com/docs/mod_actions/
-		if (event.type === 'ModAction' && (event as ModAction).action !== 'community_styling') {
+		if (event.type === 'ModAction' && event.action !== 'community_styling') {
 			return;
 		}
 
