@@ -40,7 +40,15 @@ Devvit.addTrigger({
 				throw 'The subreddit wiki must be enabled for this bot to change the stylesheet. Please enable the wiki at /r/' + subreddit.name + '/about/edit?page=wikis.';
 			}
 
-			const generatedStyles = await generateStyles(await context.settings.getAll(), context.assets, subreddit);
+			const subredditStyles = await reddit.getSubredditStyles(context.subredditId);
+			if (true) {
+				const entries = Object.entries(subredditStyles).sort();
+				console.log('Subreddit Styles:');
+				for (const entry of entries) {
+					console.log('  ' + entry[0] + ': ' + entry[1]);
+				}
+			}
+			const generatedStyles = await generateStyles(subredditStyles, await context.settings.getAll(), context.assets, subreddit);
 
 			const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
 			const [extraStylesBefore, extraStylesAfter] = (() => {
@@ -71,8 +79,11 @@ Devvit.addTrigger({
 				} catch (e) {
 					// Only catch the "stylesheet is too big" error.
 					// TODO What error is the "stylesheet is too big" error?
-					if (false) {
-						continue;
+					if (e instanceof Error) {
+						console.log('Error Name: ' + e.name);
+						console.log('Error Message: ' + e.message);
+						//continue;
+						throw e;
 					} else {
 						throw e;
 					}

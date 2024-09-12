@@ -1,95 +1,131 @@
-import { SettingsValues, Subreddit } from '@devvit/public-api';
-import { ColorString, StructuredStyles, UrlString, getSubredditStructuredStyles, reuploadImage } from './fetch.js';
+import { SubredditStyles, SettingsValues, Subreddit } from '@devvit/public-api';
+import { reuploadImage } from './fetch.js';
 import { AssetsClient } from '@devvit/public-api/apis/AssetsClient/AssetsClient.js';
 
 export const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
 
+// The full hex-limited type is "too complex to represent". TS2590.
+//type Hex = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z';
+//type ColorString = `#${Hex}${Hex}${Hex}${Hex}${Hex}${Hex}`;
+type ColorString = string | `#${string}`;
+type UrlString = string | null;
 /**
  * The New Reddit subreddit styles, in the same layout they are on the website.
- * Mod Tools -> Settings -> Community Appearance -> Appearance
- * The website uses the word "fill" for the "cover" image positions.
  */
-type SubredditStyles = {
-	colorTheme: {
-		themeColors: {
-			/** Color for subreddit icon background and sidebar section title background. Also changes banner background (if it isn't set), but to a complimentary color. */
-			base: ColorString;
-			/** Color for icons, sidebar button backgrounds, links, and the comment expando line on hover. Actual displayed color is limited to keep it from being too bright. */
-			highlight: ColorString;
-		};
-		bodyBackground: {
-			/** Color for page body background. */
+type ValidatedSubredditStyles = {
+	/**
+	 * Old Reddit
+	 */
+	n0: {
+		mobileLookAndFeel: {
 			color: ColorString;
-			image: UrlString;
-			imagePosition: 'cover' | 'tiled' | 'centered';
-		};
-	};
-	nameAndIcon: {
-		nameFormat: 'slashtag' | 'pretty' | 'hide';
-		image: UrlString;
-		hideIconInBanner: boolean; // 'show' | 'hide'
-	};
-	banner: {
-		/** The pixel heights listed on the subreddit banner style page are wrong. The actual heights are: 80px, 144px, and 208px. */
-		height: 'small' | 'medium' | 'large';
-		backgroundColor: ColorString;
-		backgroundImage: UrlString;
-		backgroundImagePosition: 'cover' | 'tiled';
-		additionalBackgroundImage: UrlString;
-		hoverImage: UrlString;
-		hoverImagePosition: 'left' | 'centered' | 'right';
-		mobileBannerImage: UrlString;
-	};
-	/** There is no menu on Old Reddit, so we don't need to do anything with these styles. */
-	menu: {
-		linkColors: {
-			activePage: ColorString;
-			inactivePage: ColorString;
-			hover: ColorString;
-		};
-		mainMenuBackground: {
-			color: ColorString;
-			opacity: string;
-		};
-		submenuBackground: {
-			style: 'default' | 'custom';
-			color: ColorString;
-		};
-	};
-	posts: {
-		titleColor: ColorString;
-		voteIcons: {
-			custom: boolean; // 'default' | 'custom'
-			upvoteInactive: UrlString;
-			upvoteActive: UrlString;
-			upvoteCountColor: ColorString;
-			downvoteInactive: UrlString;
-			downvoteActive: UrlString;
-			downvoteCountColor: ColorString;
-		};
-		postBackground: {
-			color: ColorString;
-			image: UrlString;
-			imagePosition: 'cover' | 'tiled';
-		};
-		linkPreviewPlaceholder: {
-			image: UrlString;
-			imagePosition: 'cover' | 'tiled';
 		}
+	};
+	/**
+	 * New Reddit: Mod Tools -> Settings -> Community Appearance -> Appearance
+	 * The website uses the word "fill" for the "cover" image positions.
+	 */
+	n1: {
+		colorTheme: {
+			themeColors: {
+				/** Color for subreddit icon background and sidebar section title background. Also changes banner background (if it isn't set), but to a complimentary color. */
+				base: ColorString;
+				/** Color for icons, sidebar button backgrounds, links, and the comment expando line on hover. Actual displayed color is limited to keep it from being too bright. */
+				highlight: ColorString;
+			};
+			bodyBackground: {
+				/** Color for page body background. */
+				color: ColorString;
+				image: UrlString;
+				imagePosition: 'cover' | 'tiled' | 'centered';
+			};
+		};
+		nameAndIcon: {
+			nameFormat: 'slashtag' | 'pretty' | 'hide';
+			image: UrlString;
+			hideIconInBanner: boolean; // 'show' | 'hide'
+		};
+		banner: {
+			/** The pixel heights listed on the subreddit banner style page are wrong. The actual heights are: 80px, 144px, and 208px. */
+			height: 'small' | 'medium' | 'large';
+			backgroundColor: ColorString;
+			backgroundImage: UrlString;
+			backgroundImagePosition: 'cover' | 'tiled';
+			additionalBackgroundImage: UrlString;
+			hoverImage: UrlString;
+			hoverImagePosition: 'left' | 'centered' | 'right';
+			mobileBannerImage: UrlString;
+		};
+		/** There is no menu on Old Reddit, so we don't need to do anything with these styles. */
+		menu: {
+			linkColors: {
+				activePage: ColorString;
+				inactivePage: ColorString;
+				hover: ColorString;
+			};
+			mainMenuBackground: {
+				color: ColorString;
+				opacity: number;
+			};
+			submenuBackground: {
+				style: 'default' | 'custom';
+				color: ColorString;
+			};
+		};
+		posts: {
+			titleColor: ColorString;
+			voteIcons: {
+				custom: boolean; // 'default' | 'custom'
+				upvoteInactive: UrlString;
+				upvoteActive: UrlString;
+				upvoteCountColor: ColorString;
+				downvoteInactive: UrlString;
+				downvoteActive: UrlString;
+				downvoteCountColor: ColorString;
+			};
+			postBackground: {
+				color: ColorString;
+				image: UrlString;
+				imagePosition: 'cover' | 'tiled';
+			};
+			linkPreviewPlaceholder: {
+				image: UrlString;
+				imagePosition: 'cover' | 'tiled';
+			};
+		};
+	};
+	/**
+	 * New New Reddit: Mod Tools -> Settings -> Look and Feel -> Community Styling/Appearance
+	 * These colors are not directly used anywhere on the page.
+	 * Instead, similar colors are generated, and those are used on the page.
+	 * I do not know what the default colors are; they are not the same as New Reddit.
+	 */
+	n2: {
+		avatar: UrlString;
+		banner: UrlString;
+		keyColor: ColorString | undefined;
+		baseColor: ColorString | undefined;
+		stickyPostColor: ColorString | undefined;
 	};
 };
 
 /**
- * Creates a SubredditStyles object from the styles in the given data.
+ * Rearranges the SubredditStyles data to be like ValidatedSubredditStyles, and
+ * tries to replace any missing values with the default values.
  */
-async function validateStyles(structuredStyles: StructuredStyles): Promise<SubredditStyles> {
-	function limitHighlightColor(highlightThemeColor: ColorString): string {
+function validateStyles(styles: SubredditStyles): ValidatedSubredditStyles {
+	function limitHighlightColor(highlightThemeColor: ColorString): ColorString {
 		// TODO This color is limited to keep it from being too bright, but I'm not sure how.
 		// ex. #ffffff -> #e6e6e6, #fffff0 -> #ffffbd, #ffffbe -> #ffff8b
+		switch (highlightThemeColor) {
+			case '#ffffff': return '#e6e6e6';
+			case '#fffff0': return '#ffffbd';
+			case '#ffffbe': return '#ffff8b';
+		}
 		return highlightThemeColor;
 	}
-	function calculateBannerBackgroundColor(primaryThemeColor: ColorString | null | undefined): string {
+	function calculateBannerBackgroundColor(primaryThemeColor: ColorString | undefined): string {
 		if (!primaryThemeColor) {
 			return '#33a8ff';
 		}
@@ -98,83 +134,97 @@ async function validateStyles(structuredStyles: StructuredStyles): Promise<Subre
 		return '#33a8ff';
 	}
 
-	const styles = structuredStyles?.data?.style ?? {};
-
 	return {
-		colorTheme: {
-			themeColors: {
-				base: styles.primaryColor ?? '#0079d3',
-				highlight: styles.highlightColor ? limitHighlightColor(styles.highlightColor) : '#0079d3'
-			},
-			bodyBackground: {
-				color: styles.backgroundColor ?? '#dae0e6',
-				image: styles.backgroundImage ?? null,
-				imagePosition: styles.backgroundImagePosition ?? 'cover'
+		n0: {
+			mobileLookAndFeel: {
+				// TODO I don't actually know what the default mobile color is.
+				color: styles.legacyPrimaryColor ?? '#ff4500'
 			}
 		},
-		nameAndIcon: {
-			nameFormat: styles.bannerCommunityNameFormat ?? 'slashtag',
-			image: styles.communityIcon ?? null,
-			hideIconInBanner: styles.bannerShowCommunityIcon === 'hide'
-		},
-		banner: {
-			height: styles.bannerHeight ?? 'small',
-			backgroundColor: styles.bannerBackgroundColor ?? calculateBannerBackgroundColor(styles.primaryColor),
-			backgroundImage: styles.bannerBackgroundImage ?? null,
-			backgroundImagePosition: styles.bannerBackgroundImagePosition ?? 'cover',
-			additionalBackgroundImage: styles.secondaryBannerPositionedImage ?? null,
-			hoverImage: styles.bannerPositionedImage ?? null,
-			hoverImagePosition: styles.bannerPositionedImagePosition ?? 'left',
-			mobileBannerImage: styles.mobileBannerImage ?? null
-		},
-		menu: {
-			linkColors: {
-				activePage: styles.menuLinkColorActive ?? '#0079d3',
-				inactivePage: styles.menuLinkColorInactive ?? '#0079d3',
-				hover: styles.menuLinkColorHover ?? '#0079d3'
+		n1: {
+			colorTheme: {
+				themeColors: {
+					base: styles.primaryColor ?? '#0079d3',
+					highlight: styles.highlightColor ? limitHighlightColor(styles.highlightColor) : '#0079d3'
+				},
+				bodyBackground: {
+					color: styles.backgroundColor ?? '#dae0e6',
+					image: styles.backgroundImage ?? null,
+					imagePosition: styles.backgroundImagePosition ?? 'cover'
+				}
 			},
-			mainMenuBackground: {
-				color: styles.menuBackgroundColor ?? '#dbf0ff',
-				opacity: styles.menuBackgroundOpacity ?? '70'
+			nameAndIcon: {
+				nameFormat: styles.bannerCommunityNameFormat ?? 'slashtag',
+				image: styles.icon ?? null,
+				hideIconInBanner: styles.bannerShowCommunityIcon === 'hide'
 			},
-			submenuBackground: {
-				style: styles.submenuBackgroundStyle ?? 'default',
-				color: styles.submenuBackgroundColor ?? '#dbf0ff'
+			banner: {
+				height: styles.bannerHeight ?? 'small',
+				backgroundColor: styles.bannerBackgroundColor ?? calculateBannerBackgroundColor(styles.primaryColor),
+				backgroundImage: styles.bannerBackgroundImage ?? null,
+				backgroundImagePosition: styles.bannerBackgroundImagePosition ?? 'cover',
+				additionalBackgroundImage: styles.secondaryBannerPositionedImage ?? null,
+				hoverImage: styles.bannerPositionedImage ?? null,
+				hoverImagePosition: styles.bannerPositionedImagePosition ?? 'left',
+				mobileBannerImage: styles.mobileBannerImage ?? null
+			},
+			menu: {
+				linkColors: {
+					activePage: styles.menuLinkColorActive ?? '#0079d3',
+					inactivePage: styles.menuLinkColorInactive ?? '#0079d3',
+					hover: styles.menuLinkColorHover ?? '#0079d3'
+				},
+				mainMenuBackground: {
+					color: styles.menuBackgroundColor ?? '#dbf0ff',
+					opacity: styles.menuBackgroundOpacity ?? 70
+				},
+				submenuBackground: {
+					style: styles.submenuBackgroundStyle ?? 'default',
+					color: styles.submenuBackgroundColor ?? '#dbf0ff'
+				}
+			},
+			posts: {
+				titleColor: styles.postTitleColor ?? '#222222',
+				voteIcons: {
+					custom: styles.postVoteIcons === 'custom',
+					upvoteInactive: styles.postUpvoteIconInactive ?? null,
+					upvoteActive: styles.postUpvoteIconActive ?? null,
+					upvoteCountColor: styles.postUpvoteCountColor ?? '#ff4500',
+					downvoteInactive: styles.postDownvoteIconInactive ?? null,
+					downvoteActive: styles.postDownvoteIconActive ?? null,
+					downvoteCountColor: styles.postDownvoteCountColor ?? '#7193ff'
+				},
+				postBackground: {
+					color: styles.postBackgroundColor ?? '#ffffff',
+					image: styles.postBackgroundImage ?? null,
+					imagePosition: styles.postBackgroundImagePosition ?? 'cover'
+				},
+				linkPreviewPlaceholder: {
+					image: styles.postPlaceholderImage ?? null,
+					imagePosition: styles.postPlaceholderImagePosition ?? 'cover'
+				}
 			}
 		},
-		posts: {
-			titleColor: styles.postTitleColor ?? '#222222',
-			voteIcons: {
-				custom: styles.postVoteIcons === 'custom',
-				upvoteInactive: styles.postUpvoteIconInactive ?? null,
-				upvoteActive: styles.postUpvoteIconActive ?? null,
-				upvoteCountColor: styles.postUpvoteCountColor ?? '#ff4500',
-				downvoteInactive: styles.postDownvoteIconInactive ?? null,
-				downvoteActive: styles.postDownvoteIconActive ?? null,
-				downvoteCountColor: styles.postDownvoteCountColor ?? '#7193ff'
-			},
-			postBackground: {
-				color: styles.postBackgroundColor ?? '#ffffff',
-				image: styles.postBackgroundImage ?? null,
-				imagePosition: styles.postBackgroundImagePosition ?? 'cover'
-			},
-			linkPreviewPlaceholder: {
-				image: styles.postPlaceholderImage ?? null,
-				imagePosition: styles.postPlaceholderImagePosition ?? 'cover'
-			}
+		n2: {
+			avatar: null,
+			banner: null,
+			keyColor: styles.primaryColor,
+			baseColor: styles.backgroundColor,
+			stickyPostColor: styles.highlightColor
 		}
 	};
 }
 
-export async function generateStyles(appSettings: SettingsValues, assets: AssetsClient, subreddit: Subreddit): Promise<string> {
-	const structuredStyles = await getSubredditStructuredStyles(subreddit.name);
-	const styles = await validateStyles(structuredStyles);
+export async function generateStyles(subredditStyles: SubredditStyles, appSettings: SettingsValues, assets: AssetsClient, subreddit: Subreddit): Promise<string> {
+	const styles = validateStyles(subredditStyles);
 
 	let generatedStyles = '';
 
 	if (appSettings['add-comment-collapse-bar']) {
-		// new reddit uses '--newCommunityTheme-line' for the line when not hovered
+		// New Reddit uses '--newCommunityTheme-line' for the line when not hovered.
 		const newCommunityThemeLine = '#edeff1';
+		// New New Reddit uses '--color-tone-4' when not hovered and '--color-tone-2' when hovered,
+		// both of which are based on both 'styles.n2.baseColor' and 'styles.n2.stickyPostColor'.
 		generatedStyles += `
 .comment {
 	position: relative;
@@ -200,7 +250,7 @@ export async function generateStyles(appSettings: SettingsValues, assets: Assets
 	display: none;
 }
 .comment .expand:hover::after {
-	border-color: ` + styles.colorTheme.themeColors.highlight + `;
+	border-color: ` + styles.n1.colorTheme.themeColors.highlight + `;
 	text-decoration: none;
 }
 .comment .child {
@@ -210,10 +260,10 @@ export async function generateStyles(appSettings: SettingsValues, assets: Assets
 
 	generatedStyles += `
 a {
-	color: ` + styles.colorTheme.themeColors.highlight + `;
+	color: ` + styles.n1.colorTheme.themeColors.highlight + `;
 }
 body {
-	background-color: ` + styles.colorTheme.bodyBackground.color + `;
+	background-color: ` + styles.n1.colorTheme.bodyBackground.color + `;
 }
 body > .content {
 	background-color: #fff;
@@ -223,7 +273,7 @@ body > .content {
 	margin: 10px 12px;
 }`;
 
-	const bodyBackground = styles.colorTheme.bodyBackground;
+	const bodyBackground = styles.n1.colorTheme.bodyBackground;
 	const bodyBackgroundImage = await reuploadImage(subreddit.name, bodyBackground.image, 'auto-body-background');
 	if (bodyBackgroundImage) {
 		generatedStyles += `
@@ -256,27 +306,27 @@ body {
 		'small': '80px',
 		'medium': '144px',
 		'large': '208px'
-	}[styles.banner.height];
+	}[styles.n1.banner.height];
 	generatedStyles += `
 #header-bottom-left {
 	align-items: end;
-	background-color: ` + styles.banner.backgroundColor + `;
+	background-color: ` + styles.n1.banner.backgroundColor + `;
 	display: flex;
 	height: ` + bannerHeight + `;
 }`;
 
-	const bannerBackgroundImage = await reuploadImage(subreddit.name, styles.banner.backgroundImage, 'auto-banner');
+	const bannerBackgroundImage = await reuploadImage(subreddit.name, styles.n1.banner.backgroundImage, 'auto-banner');
 	if (bannerBackgroundImage) {
 		generatedStyles += `
 #header-bottom-left {
 	background-image: url(` + bannerBackgroundImage + `);`;
-		if (styles.banner.backgroundImagePosition == 'cover') {
+		if (styles.n1.banner.backgroundImagePosition == 'cover') {
 			generatedStyles += `
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
 `;
-		} else if (styles.banner.backgroundImagePosition == 'tiled') {
+		} else if (styles.n1.banner.backgroundImagePosition == 'tiled') {
 			generatedStyles += `
 	background-position: center top;
 	background-repeat: repeat;
@@ -292,8 +342,8 @@ body {
 	display: none;
 }`;
 
-	if (!styles.nameAndIcon.hideIconInBanner) {
-		const communityIconImage = await reuploadImage(subreddit.name, styles.nameAndIcon.image, 'auto-subreddit-icon');
+	if (!styles.n1.nameAndIcon.hideIconInBanner) {
+		const communityIconImage = await reuploadImage(subreddit.name, styles.n1.nameAndIcon.image, 'auto-subreddit-icon');
 		if (communityIconImage) {
 			generatedStyles += `
 .pagename a::before {
@@ -314,13 +364,13 @@ body {
 
 	generatedStyles += `
 .listing-page .link {
-	background-color: ` + styles.posts.postBackground.color + `;
+	background-color: ` + styles.n1.posts.postBackground.color + `;
 }
 .listing-page .link a.title {
-	color: ` + styles.posts.titleColor + `;
+	color: ` + styles.n1.posts.titleColor + `;
 }`;
 
-	const voteIcons = styles.posts.voteIcons;
+	const voteIcons = styles.n1.posts.voteIcons;
 	if (voteIcons.custom) {
 		generatedStyles += `
 .link .score.likes {

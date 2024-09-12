@@ -9,10 +9,16 @@
     "test:unit": "vitest --run"
   },
   "dependencies": {
-    "@devvit/public-api": "0.10.22"
+    "@devvit/public-api": "next",
+    "@devvit/runtimes": "next"
   },
   "devDependencies": {
     "typescript": "5.3.3",
-    "vitest": "1.0.4"
-  }
+    "vitest": "1.6.0"
+  },
+  "trustedDependencies": [
+    "core-js",
+    "esbuild",
+    "protobufjs"
+  ]
 }
