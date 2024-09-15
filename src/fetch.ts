@@ -95,14 +95,14 @@ export async function reuploadImage(subreddit: string, url: string | null, image
 		{
 			/** file upload with maximum size of 500 KiB */
 			file: Buffer.from(imageData).toString('binary'), // TODO What is this supposed to be?
-			/** (optional) can be ignored */
-			header: 0,
 			/** an integer between 0 and 1 */
-			imgType: '0',
+			header: 0,
+			/** one of png or jpg (default: png) */
+			imgType: imageType,
 			/** a valid subreddit image name */
 			name: imageName,
-			/** one of png or jpg (default: png) */
-			uploadType: imageType,
+			/* one of (img, header, icon, banner) */
+			uploadType: 'img',
 			/** the name of the subreddit */
 			subreddit: subreddit
 		},
