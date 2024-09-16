@@ -1,6 +1,5 @@
-import { SubredditStyles, SettingsValues, Subreddit } from '@devvit/public-api';
+import { SubredditStyles, TriggerContext } from '@devvit/public-api';
 import { reuploadImage } from './fetch.js';
-import { AssetsClient } from '@devvit/public-api/apis/AssetsClient/AssetsClient.js';
 
 export const STYLESHEET_HEADER = '/* Auto-Generated CSS Start */';
 export const STYLESHEET_FOOTER = '/* Auto-Generated CSS End */';
@@ -215,12 +214,14 @@ function validateStyles(styles: SubredditStyles): ValidatedSubredditStyles {
 	};
 }
 
-export async function generateStyles(subredditStyles: SubredditStyles, appSettings: SettingsValues, assets: AssetsClient, subreddit: Subreddit): Promise<string> {
+export async function generateStyles(subredditStyles: SubredditStyles, context: TriggerContext): Promise<string> {
+	const { assets, redis } = context;
 	const styles = validateStyles(subredditStyles);
+	const subredditName = context.subredditName!;
 
 	let generatedStyles = '';
 
-	if (appSettings['add-comment-collapse-bar']) {
+	if (await context.settings.get('add-comment-collapse-bar')) {
 		// New Reddit uses '--newCommunityTheme-line' for the line when not hovered.
 		const newCommunityThemeLine = '#edeff1';
 		// New New Reddit uses '--color-tone-4' when not hovered and '--color-tone-2' when hovered,
@@ -274,7 +275,7 @@ body > .content {
 }`;
 
 	const bodyBackground = styles.n1.colorTheme.bodyBackground;
-	const bodyBackgroundImage = await reuploadImage(subreddit.name, bodyBackground.image, 'auto-body-background');
+	const bodyBackgroundImage = await reuploadImage(subredditName, bodyBackground.image, 'auto-body-background', redis);
 	if (bodyBackgroundImage) {
 		generatedStyles += `
 body {
@@ -315,7 +316,7 @@ body {
 	height: ` + bannerHeight + `;
 }`;
 
-	const bannerBackgroundImage = await reuploadImage(subreddit.name, styles.n1.banner.backgroundImage, 'auto-banner');
+	const bannerBackgroundImage = await reuploadImage(subredditName, styles.n1.banner.backgroundImage, 'auto-banner', redis);
 	if (bannerBackgroundImage) {
 		generatedStyles += `
 #header-bottom-left {
@@ -343,7 +344,7 @@ body {
 }`;
 
 	if (!styles.n1.nameAndIcon.hideIconInBanner) {
-		const communityIconImage = await reuploadImage(subreddit.name, styles.n1.nameAndIcon.image, 'auto-subreddit-icon');
+		const communityIconImage = await reuploadImage(subredditName, styles.n1.nameAndIcon.image, 'auto-subreddit-icon', redis);
 		if (communityIconImage) {
 			generatedStyles += `
 .pagename a::before {
@@ -380,8 +381,8 @@ body {
 	color: ` + voteIcons.downvoteCountColor + `;
 }`;
 
-		const upvoteActiveImage = await reuploadImage(subreddit.name, voteIcons.upvoteActive, 'auto-upvote-active');
-		const upvoteInactiveImage = await reuploadImage(subreddit.name, voteIcons.upvoteInactive, 'auto-upvote-inactive');
+		const upvoteActiveImage = await reuploadImage(subredditName, voteIcons.upvoteActive, 'auto-upvote-active', redis);
+		const upvoteInactiveImage = await reuploadImage(subredditName, voteIcons.upvoteInactive, 'auto-upvote-inactive', redis);
 		if (upvoteActiveImage && upvoteInactiveImage) {
 			generatedStyles += `
 .arrow.up {
@@ -391,7 +392,7 @@ body {
 	background: url(` + upvoteInactiveImage + `);
 }`;
 		} else {
-			const upvoteActiveMask = await reuploadImage(subreddit.name, await assets.getURL('upvote-mask.png'), 'auto-upvote-active');
+			const upvoteActiveMask = await reuploadImage(subredditName, assets.getURL('upvote-mask.png'), 'auto-upvote-active', redis);
 			if (upvoteActiveMask) {
 				generatedStyles += `
 .arrow.up, .arrow.upmod {
@@ -403,8 +404,8 @@ body {
 			}
 		}
 
-		const downvoteActiveImage = await reuploadImage(subreddit.name, voteIcons.downvoteActive, 'auto-downvote-active');
-		const downvoteInactiveImage = await reuploadImage(subreddit.name, voteIcons.downvoteInactive, 'auto-downvote-inactive');
+		const downvoteActiveImage = await reuploadImage(subredditName, voteIcons.downvoteActive, 'auto-downvote-active', redis);
+		const downvoteInactiveImage = await reuploadImage(subredditName, voteIcons.downvoteInactive, 'auto-downvote-inactive', redis);
 		if (downvoteActiveImage && downvoteInactiveImage) {
 			generatedStyles += `
 .arrow.down {
@@ -414,7 +415,7 @@ body {
 	background: url(` + downvoteInactiveImage + `);
 }`;
 		} else {
-			const downvoteActiveMask = await reuploadImage(subreddit.name, await assets.getURL('downvote-mask.png'), 'auto-downvote-active');
+			const downvoteActiveMask = await reuploadImage(subredditName, assets.getURL('downvote-mask.png'), 'auto-downvote-active', redis);
 			if (downvoteActiveMask) {
 				generatedStyles += `
 .arrow.down, .arrow.downmod {

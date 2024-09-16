@@ -1,4 +1,4 @@
-import { Devvit } from '@devvit/public-api';
+import { Devvit, RedisClient } from '@devvit/public-api';
 import { getMetadata } from '@devvit/runtimes/plugins/helpers.js';
 
 import { Flair } from '@devvit/runtimes/plugins/redditapi/Flair.js';
@@ -57,13 +57,18 @@ type StylesheetImage = `%%${ImageName}%%`;
  * An image that is replaced will not be updated on the subreddit until the next time the stylesheet is saved.
  * Returns the given image name with '%%' added around it, or null if an error occurs.
  */
-export async function reuploadImage(subreddit: string, url: string | null, imageName: ImageName): Promise<StylesheetImage | null> {
+export async function reuploadImage(subredditName: string, url: string | null, imageName: ImageName, redis: RedisClient): Promise<StylesheetImage | null> {
 	if (url == null) {
 		return null;
 	}
 
 	// Remove any query parameters.
 	url = url.split('?')[0];
+
+	// Check if we've previously reuploaded this image with this image name.
+	if (url === await redis.get(imageName)) {
+		return `%%${imageName}%%`;
+	}
 
 	// Get image type.
 	const imageType = url.slice(-3);
@@ -104,11 +109,16 @@ export async function reuploadImage(subreddit: string, url: string | null, image
 			/* one of (img, header, icon, banner) */
 			uploadType: 'img',
 			/** the name of the subreddit */
-			subreddit: subreddit
+			subreddit: subredditName
 		},
 		getMetadata()
 	);
 	console.log(uploadSRImageResponse);
 
-	return uploadSRImageResponse.errors ? null : `%%${imageName}%%`;
+	if (uploadSRImageResponse.errors) {
+		return null;
+	}
+
+	await redis.set(imageName, url);
+	return `%%${imageName}%%`;
 }

@@ -4,6 +4,7 @@ import { generateStyles, STYLESHEET_HEADER, STYLESHEET_FOOTER, createStylesheet 
 
 Devvit.configure({
 	redditAPI: true,
+	redis: true,
 	http: true
 });
 
@@ -48,7 +49,7 @@ Devvit.addTrigger({
 					console.log('  ' + entry[0] + ': ' + entry[1]);
 				}
 			}
-			const generatedStyles = await generateStyles(subredditStyles, await context.settings.getAll(), context.assets, subreddit);
+			const generatedStyles = await generateStyles(subredditStyles, context);
 
 			const currentStylesheet = (await reddit.getWikiPage(subreddit.name, 'config/stylesheet')).content;
 			const [extraStylesBefore, extraStylesAfter] = (() => {
