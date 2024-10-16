@@ -99,14 +99,13 @@ Devvit.addTrigger({
 				message = e ? String(e) : 'An unknown error occurred.';
 			}
 			try {
-				await reddit.modMail.createConversation({
-					to: null, // creates internal moderator discussion
+				await reddit.modMail.createModNotification({
 					subject: 'Auto-Stylesheet Failed to Update',
-					body: message,
-					subredditName: subreddit.name
+					bodyMarkdown: message,
+					subredditId: context.subredditId
 				});
 			} catch (modmailError) {
-				console.error('Error sending mod mail for error:', modmailError);
+				console.error(`error sending mod notification\n${message}\n${modmailError}`);
 			}
 		}
 	}
