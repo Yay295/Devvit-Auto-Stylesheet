@@ -1,3 +1,60 @@
+import { JSDOM } from 'jsdom';
+import { CSSStyleSheet, CSSStyleRule } from 'cssom';
+
+/**
+	Reddit currently has 6 style rule blocks:
+	default and explicit light,
+	default and explicit light stickied,
+	browser style dark and not explicit light,
+	browser style dark and not explicit light stickied,
+	explicit dark,
+	explicit dark stickied.
+	The last two pairs use the same colors.
+*/
+type Styles = 'light' | 'light stickied' | 'dark' | 'dark stickied';
+
+type CSSPropertyName = `--${string}`;
+
+export async function scrapeNewNewRedditCSS(subredditName: string): Promise<{ [style in Styles]: CSSPropertyName[] }> {
+	const html = await fetch('https://sh.reddit.com/r/' + subredditName).then(r => r.text());
+	const dom = new JSDOM(html);
+	const styleElement = dom.window.document.getElementById('community-styles-style-element') as HTMLStyleElement;
+	// The JSDOM/CSSOM CSSStyleSheet is not quite the same as the spec CSSStyleSheet.
+	const stylesheet = styleElement.sheet as unknown as CSSStyleSheet;
+	const rules = Array.from(
+		stylesheet.cssRules
+	).filter(
+		(rule): rule is CSSStyleRule => rule.type === CSSRule.STYLE_RULE
+	).map(rule => {
+		// Parse Selector
+		let style: Styles;
+		if (rule.selectorText.startsWith(':root .sidebar-grid,')) {
+			style = 'light';
+		} else if (rule.selectorText.startsWith(':root .sidebar-grid .theme-beta.stickied,')) {
+			style = 'light stickied';
+		} else if (rule.selectorText.startsWith(':root.theme-dark .sidebar-grid,')) {
+			style = 'dark';
+		} else if (rule.selectorText.startsWith(':root.theme-dark .sidebar-grid .theme-beta.stickied,')) {
+			style = 'dark stickied';
+		} else {
+			return null;
+		}
+		// Collect Properties
+		const styleDeclaration = rule.style;
+		const properties: { [property: CSSPropertyName]: string } = {};
+		for (let property of Array.from(styleDeclaration)) {
+			if (property.startsWith('--')) {
+				properties[property as CSSPropertyName] = styleDeclaration.getPropertyValue(property);
+			}
+		}
+		return [style,properties];
+	}).filter(
+		style => style !== null
+	);
+	return Object.fromEntries(rules);
+}
+
+
 import { Devvit, RedisClient } from '@devvit/public-api';
 import { getMetadata } from '@devvit/runtimes/plugins/helpers.js';
 import * as protos from "@devvit/protos";
@@ -23,7 +80,6 @@ function getRedditAPIPlugins() {
 	}
 	return redditAPIPlugins;
 }
-
 
 type ImageName = 'auto-body-background'
 	| 'auto-subreddit-icon'

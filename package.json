@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@devvit/protos": "latest",
-    "@devvit/public-api": "latest"
+    "@devvit/public-api": "latest",
+    "jsdom": "latest"
   },
   "devDependencies": {
+    "@types/cssom": "latest",
+    "@types/jsdom": "latest",
     "typescript": "5.3.3",
     "vitest": "1.6.0"
   },
