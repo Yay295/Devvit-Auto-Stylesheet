@@ -9,8 +9,8 @@
     "test:unit": "vitest --run"
   },
   "dependencies": {
-    "@devvit/public-api": "next",
-    "@devvit/runtimes": "next"
+    "@devvit/public-api": "latest",
+    "@devvit/runtimes": "latest"
   },
   "devDependencies": {
     "typescript": "5.3.3",
