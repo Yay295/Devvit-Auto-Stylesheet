@@ -11,11 +11,9 @@
   "dependencies": {
     "@devvit/protos": "latest",
     "@devvit/public-api": "latest",
-    "jsdom": "latest"
+    "devvit-get-real-subreddit-colors": "github:Yay295/Devvit-Get-Real-Subreddit-Colors"
   },
   "devDependencies": {
-    "@types/cssom": "latest",
-    "@types/jsdom": "latest",
     "typescript": "5.3.3",
     "vitest": "1.6.0"
   },
