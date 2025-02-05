@@ -1,32 +1,20 @@
 import { Devvit, RedisClient } from '@devvit/public-api';
 import { getMetadata } from '@devvit/runtimes/plugins/helpers.js';
-
-import { Flair } from '@devvit/runtimes/plugins/redditapi/Flair.js';
-import { GraphQL } from '@devvit/runtimes/plugins/redditapi/GraphQL.js';
-import { LinksAndComments } from '@devvit/runtimes/plugins/redditapi/LinksAndComments.js';
-import { Listings } from '@devvit/runtimes/plugins/redditapi/Listings.js';
-import { Moderation } from '@devvit/runtimes/plugins/redditapi/Moderation.js';
-import { ModNote } from '@devvit/runtimes/plugins/redditapi/ModNote.js';
-import { NewModmail } from '@devvit/runtimes/plugins/redditapi/NewModmail.js';
-import { PrivateMessages } from '@devvit/runtimes/plugins/redditapi/PrivateMessages.js';
-import { Subreddits } from '@devvit/runtimes/plugins/redditapi/Subreddits.js';
-import { Users } from '@devvit/runtimes/plugins/redditapi/Users.js';
-import { Widgets } from '@devvit/runtimes/plugins/redditapi/Widgets.js';
-import { Wiki } from '@devvit/runtimes/plugins/redditapi/Wiki.js';
+import * as protos from "@devvit/protos";
 
 type RedditAPIPlugins = {
-	Flair: Flair;
-	GraphQL: GraphQL;
-	LinksAndComments: LinksAndComments;
-	Listings: Listings;
-	Moderation: Moderation;
-	ModNote: ModNote;
-	NewModmail: NewModmail;
-	PrivateMessages: PrivateMessages;
-	Subreddits: Subreddits;
-	Users: Users;
-	Widgets: Widgets;
-	Wiki: Wiki;
+	Flair: protos.Flair;
+	GraphQL: protos.GraphQL;
+	LinksAndComments: protos.LinksAndComments;
+	Listings: protos.Listings;
+	Moderation: protos.Moderation;
+	ModNote: protos.ModNote;
+	NewModmail: protos.NewModmail;
+	PrivateMessages: protos.PrivateMessages;
+	Subreddits: protos.Subreddits;
+	Users: protos.Users;
+	Widgets: protos.Widgets;
+	Wiki: protos.Wiki;
 };
 let redditAPIPlugins: RedditAPIPlugins | null = null;
 function getRedditAPIPlugins() {
