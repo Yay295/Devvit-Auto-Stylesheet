@@ -33,8 +33,7 @@ Devvit.addTrigger({
 		}
 
 		const { reddit } = context;
-		const subreddit = await reddit.getSubredditById(context.subredditId);
-		//const { subreddit } = event; // possibly undefined?
+		const subreddit = await reddit.getCurrentSubreddit();
 
 		try {
 			if (!subreddit.settings.wikiEnabled) {
